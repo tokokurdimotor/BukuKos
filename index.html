@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <title>Buku Kos</title>
+<link rel="icon" href="logo.png" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -78,10 +79,13 @@
     padding:4px 0 22px; margin-bottom:22px; border-bottom:1px solid var(--line);
   }
   .brand{display:flex; align-items:center; gap:12px;}
-  .brand .mark{
-    font-family:var(--font-display); font-weight:800; font-size:15px; letter-spacing:.01em;
-    color:var(--accent-ink); background:var(--accent); border-radius:11px; padding:9px 11px;
-    box-shadow:0 6px 16px -6px rgba(91,91,214,.5);
+  /* Logo Kurdi Motor — background PUTIH TETAP (bukan token tema) biar
+     merahnya konsisten kontras di background apapun (dashboard gelap,
+     gerbang krem, dst), bukan div teks placeholder "BK" lagi. */
+  .mark{
+    width:40px; height:40px; padding:6px; box-sizing:border-box;
+    background:#fff; border-radius:11px; object-fit:contain; flex-shrink:0;
+    box-shadow:0 6px 16px -6px rgba(17,21,28,.35);
   }
   .brand h1{font-size:21px; font-weight:800; letter-spacing:-.01em;}
   .brand .sub{color:var(--muted); font-size:12.5px;}
@@ -287,7 +291,6 @@
     padding:24px; background:var(--a-bg); color:var(--a-ink);
   }
   .auth-brand{ position:fixed; top:24px; left:24px; display:flex; align-items:center; gap:10px; color:var(--a-ink); }
-  .auth-brand .mark{ font-family:var(--font-display); font-weight:800; font-size:14px; color:#fff; background:var(--a-ink); border-radius:10px; padding:7px 9px; }
   .auth-brand span{ font-weight:800; font-size:15px; }
   .auth-container{
     position:relative; width:100%; max-width:760px; min-height:480px;
@@ -387,7 +390,6 @@
 
   /* ---- tenant self-view (palet krem yang sama biar nyambung sama gerbang login) ---- */
   .tenant-wrap{ max-width:640px; margin:0 auto; padding:40px 20px 64px; background:var(--a-bg); min-height:100vh; color:var(--a-ink); }
-  .tenant-wrap .brand .mark{ background:var(--a-ink); color:#fff; }
   .tenant-card{ background:var(--a-panel); border:1px solid var(--a-line); border-radius:20px; padding:30px; box-shadow:0 20px 50px -20px rgba(38,43,61,.2); color:var(--a-ink); }
   .tenant-hello{ color:var(--a-muted); font-size:13px; margin:0; }
   .tenant-name{ font-size:26px; margin-top:2px; color:var(--a-ink); }
@@ -403,7 +405,7 @@
 
 <!-- ===================== AUTH GATE (belum login) ===================== -->
 <div class="auth-screen" id="screenGate" hidden>
-  <div class="auth-brand"><span class="mark">BK</span><span>Buku Kos</span></div>
+  <div class="auth-brand"><img class="mark" src="logo.png" alt="Kurdi Motor" /><span>Buku Kos</span></div>
   <div class="auth-container" id="authContainer">
 
     <div class="form-container sign-up-container">
@@ -482,7 +484,7 @@
 <!-- ===================== ONBOARDING (penyewa baru isi data diri sekali) ===================== -->
 <div class="tenant-wrap" id="screenOnboarding" hidden>
   <div class="topbar" style="max-width:640px; margin:0 auto 24px;">
-    <div class="brand"><span class="mark">BK</span><div><h1 style="font-size:18px;">Buku Kos</h1><div class="sub">Lengkapi data diri</div></div></div>
+    <div class="brand"><img class="mark" src="logo.png" alt="Kurdi Motor" /><div><h1 style="font-size:18px;">Buku Kos</h1><div class="sub">Lengkapi data diri</div></div></div>
     <button class="btn btn-ghost btn-sm" id="btnLogoutOnboarding">Keluar</button>
   </div>
   <div class="tenant-card">
@@ -513,7 +515,7 @@
 <!-- ===================== TENANT VIEW (penyewa) ===================== -->
 <div class="tenant-wrap" id="screenTenant" hidden>
   <div class="topbar" style="max-width:640px; margin:0 auto 24px;">
-    <div class="brand"><span class="mark">BK</span><div><h1 style="font-size:18px;">Buku Kos</h1><div class="sub">Info kamar kamu</div></div></div>
+    <div class="brand"><img class="mark" src="logo.png" alt="Kurdi Motor" /><div><h1 style="font-size:18px;">Buku Kos</h1><div class="sub">Info kamar kamu</div></div></div>
     <button class="btn btn-ghost btn-sm" id="btnLogoutTenant">Keluar</button>
   </div>
   <div id="tenantCardRoot"></div>
@@ -523,7 +525,7 @@
 <div class="app" id="screenAdmin" hidden>
   <header class="topbar">
     <div class="brand">
-      <span class="mark">BK</span>
+      <img class="mark" src="logo.png" alt="Kurdi Motor" />
       <div>
         <h1 id="propName">Buku Kos</h1>
         <div class="sub" id="propSub">Catatan kamar, sewa, dan kas kos</div>
