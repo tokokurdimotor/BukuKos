@@ -268,9 +268,19 @@
      mode. Sama juga dipakai buat layar tenant/onboarding/"belum
      dikaitkan" biar konsisten satu alur sebelum masuk dashboard admin.
      ================================================================= */
+  /* Redefine token dashboard yang DIWARISI komponen umum (.stat, .pill,
+     .due-row, dst) ke versi TERANG tetap — tanpa ini, komponen itu
+     masih baca --surface/--ink/--muted dashboard yang ikutan gelap pas
+     device dark mode, sedangkan warna teksnya kepake dari --a-ink (navy
+     tetap) yang diwarisin dari .tenant-card/.center-card di sekitarnya —
+     hasilnya teks gelap di atas kartu gelap, nyaris gak kebaca. Bug
+     nyata ketemu pas cek tampilan HP di preview. */
   .auth-screen, .tenant-wrap, .center-screen{
     --a-bg:#f3ede0; --a-panel:#f8f4e9; --a-panel-2:#ece2cb;
     --a-ink:#262b3d; --a-muted:#8c8172; --a-line:#e2d5b8; --a-input:#ffffff;
+    --ink:#262b3d; --ink-soft:#4c4536; --surface:#ffffff; --surface-2:#ece2cb;
+    --line:#e2d5b8; --line-soft:#ece2cb; --muted:#8c8172;
+    --shadow:0 1px 2px rgba(38,43,61,.05), 0 14px 32px -14px rgba(38,43,61,.18);
   }
   .auth-screen, .center-screen{
     min-height:100vh; display:flex; align-items:center; justify-content:center;
@@ -376,7 +386,8 @@
   }
 
   /* ---- tenant self-view (palet krem yang sama biar nyambung sama gerbang login) ---- */
-  .tenant-wrap{ max-width:640px; margin:0 auto; padding:40px 20px 64px; background:var(--a-bg); min-height:100vh; }
+  .tenant-wrap{ max-width:640px; margin:0 auto; padding:40px 20px 64px; background:var(--a-bg); min-height:100vh; color:var(--a-ink); }
+  .tenant-wrap .brand .mark{ background:var(--a-ink); color:#fff; }
   .tenant-card{ background:var(--a-panel); border:1px solid var(--a-line); border-radius:20px; padding:30px; box-shadow:0 20px 50px -20px rgba(38,43,61,.2); color:var(--a-ink); }
   .tenant-hello{ color:var(--a-muted); font-size:13px; margin:0; }
   .tenant-name{ font-size:26px; margin-top:2px; color:var(--a-ink); }
