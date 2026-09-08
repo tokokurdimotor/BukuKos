@@ -1,3 +1,7 @@
+<!doctype html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
 <title>Buku Kos</title>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -14,6 +18,7 @@
     --line-soft:#edeef3;
     --muted:#828a9b;
     --accent:#5b5bd6;         /* primary — indigo-violet, interactive/active */
+    --accent-2:#8b5cf6;       /* kedua, buat gradient overlay auth */
     --accent-soft:#eceafc;
     --accent-ink:#ffffff;     /* text on accent fill */
     --sage:#1f9d63;           /* good / lunas */
@@ -32,7 +37,7 @@
       --ink:#eef0f5; --ink-soft:#b7bccb;
       --paper:#0c0e13; --surface:#151822; --surface-2:#1d212c;
       --line:#282d3a; --line-soft:#212632; --muted:#7d859a;
-      --accent:#8484ea; --accent-soft:#242244; --accent-ink:#0c0e13;
+      --accent:#8484ea; --accent-2:#a78bfa; --accent-soft:#242244; --accent-ink:#0c0e13;
       --sage:#4ad48e; --sage-soft:#123324;
       --amber:#f0a63f; --amber-soft:#3a2a12;
       --rust:#f5767a; --rust-soft:#3d1e21;
@@ -43,7 +48,7 @@
     --ink:#eef0f5; --ink-soft:#b7bccb;
     --paper:#0c0e13; --surface:#151822; --surface-2:#1d212c;
     --line:#282d3a; --line-soft:#212632; --muted:#7d859a;
-    --accent:#8484ea; --accent-soft:#242244; --accent-ink:#0c0e13;
+    --accent:#8484ea; --accent-2:#a78bfa; --accent-soft:#242244; --accent-ink:#0c0e13;
     --sage:#4ad48e; --sage-soft:#123324;
     --amber:#f0a63f; --amber-soft:#3a2a12;
     --rust:#f5767a; --rust-soft:#3d1e21;
@@ -63,6 +68,7 @@
   input,select,textarea{font:inherit; color:inherit;}
   ::selection{background:var(--accent-soft);}
   a{color:inherit;}
+  [hidden]{display:none !important;}
 
   .app{max-width:1180px; margin:0 auto; padding:20px 20px 64px;}
 
@@ -82,12 +88,12 @@
   .topbar-right{display:flex; align-items:center; gap:10px;}
   .today{font-size:12.5px; color:var(--muted); text-align:right; line-height:1.35;}
   .today b{color:var(--ink); font-weight:600;}
-  .theme-toggle{
+  .theme-toggle, .icon-btn{
     border:1px solid var(--line); background:var(--surface); border-radius:10px;
     width:32px; height:32px; display:flex; align-items:center; justify-content:center;
     cursor:pointer;
   }
-  .theme-toggle:hover{background:var(--surface-2);}
+  .theme-toggle:hover, .icon-btn:hover{background:var(--surface-2);}
 
   /* ---- tabs ---- */
   .tabs{display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--line); flex-wrap:wrap;}
@@ -142,6 +148,7 @@
   .btn-danger:hover{background:var(--rust-soft);}
   .btn-sm{padding:5px 10px; font-size:12px; border-radius:9px;}
   .btn[disabled]{opacity:.45; cursor:not-allowed;}
+  .btn-block{width:100%; justify-content:center;}
 
   /* ---- pill / chip ---- */
   .pill{
@@ -218,7 +225,7 @@
   .field label{font-size:12px; font-weight:700; color:var(--ink-soft);}
   .field input, .field select, .field textarea{
     border:1px solid var(--line); border-radius:10px; padding:8px 10px; background:var(--paper); color:var(--ink);
-    font-size:13.5px;
+    font-size:13.5px; width:100%;
   }
   .field textarea{resize:vertical; min-height:56px;}
   .field-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
@@ -252,9 +259,205 @@
     padding:8px 12px; margin-bottom:16px; display:none;
   }
   .sample-note.show{display:block;}
-</style>
 
-<div class="app">
+  /* =================================================================
+     AUTH GATE — form Sign In / Sign Up dgn panel overlay geser, pola
+     klasik "sliding auth card". Struktur & animasinya dijaga PERSIS
+     (2 form tumpuk + overlay gradient geser 50%), warnanya diselarasin
+     ke token desain Buku Kos sendiri (bukan krem punya referensi),
+     biar nyambung sama tampilan sesudah login.
+     ================================================================= */
+  .auth-screen{
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:24px; background:var(--paper);
+  }
+  .auth-brand{ position:fixed; top:24px; left:24px; display:flex; align-items:center; gap:10px; }
+  .auth-brand .mark{ font-family:var(--font-display); font-weight:800; font-size:14px; color:var(--accent-ink); background:var(--accent); border-radius:10px; padding:7px 9px; }
+  .auth-brand span{ font-weight:800; font-size:15px; }
+  .auth-container{
+    position:relative; width:100%; max-width:760px; min-height:480px;
+    background:var(--surface); border-radius:20px; box-shadow:0 30px 70px -20px rgba(17,21,28,.35); overflow:hidden;
+  }
+  /* `background` WAJIB diisi di sini — tanpa ini panel form transparan,
+     jadi pas sign-in & sign-up numpuk saling tindih di posisi yang sama
+     (teknik geser klasik ini emang nyusun 2 form bertumpuk), teks
+     keduanya keliatan numpuk bareng alih-alih yang di atas (z-index
+     lebih tinggi) beneran nutupin yang di bawah. Bug nyata ketemu pas
+     preview: screenshot end-state (animasi dimatiin) masih nunjukin
+     "Daftar" & "Masuk" numpuk jadi satu. */
+  .form-container{ position:absolute; top:0; height:100%; width:50%; background:var(--surface); transition:all .6s ease-in-out; }
+  .sign-in-container{ left:0; z-index:2; }
+  .sign-up-container{ left:0; opacity:0; z-index:1; }
+  .auth-container.right-panel-active .sign-in-container{ transform:translateX(100%); }
+  .auth-container.right-panel-active .sign-up-container{ transform:translateX(100%); opacity:1; z-index:5; animation:authShow .6s; }
+  @keyframes authShow{ 0%,49.99%{ opacity:0; z-index:1; } 50%,100%{ opacity:1; z-index:5; } }
+  .auth-form{ display:flex; align-items:center; justify-content:center; flex-direction:column; height:100%; padding:0 44px; text-align:center; }
+  .auth-form h2{ font-size:22px; margin-bottom:6px; }
+  .auth-form .sub{ font-size:12.5px; color:var(--muted); margin-bottom:18px; }
+  .auth-form .field{ text-align:left; }
+  .auth-error{ color:var(--rust); font-size:12.5px; margin-top:4px; min-height:1.4em; }
+  .overlay-container{
+    position:absolute; top:0; left:50%; width:50%; height:100%; overflow:hidden;
+    transition:transform .6s ease-in-out; z-index:100;
+  }
+  .auth-container.right-panel-active .overlay-container{ transform:translateX(-100%); }
+  .overlay{
+    position:relative; left:-100%; height:100%; width:200%;
+    background:linear-gradient(135deg, var(--accent), var(--accent-2));
+    color:#fff; transform:translateX(0); transition:transform .6s ease-in-out;
+  }
+  .auth-container.right-panel-active .overlay{ transform:translateX(50%); }
+  .overlay-panel{
+    position:absolute; display:flex; align-items:center; justify-content:center; flex-direction:column;
+    padding:0 40px; text-align:center; top:0; height:100%; width:50%; transform:translateX(0);
+    transition:transform .6s ease-in-out;
+  }
+  .overlay-panel h2{ color:#fff; font-size:22px; margin-bottom:10px; }
+  .overlay-panel p{ font-size:13px; opacity:.92; margin-bottom:22px; line-height:1.5; }
+  .overlay-left{ transform:translateX(-20%); }
+  .auth-container.right-panel-active .overlay-left{ transform:translateX(0); }
+  .overlay-right{ right:0; transform:translateX(0); }
+  .auth-container.right-panel-active .overlay-right{ transform:translateX(20%); }
+  .ghost-btn{
+    background:transparent; border:1.5px solid rgba(255,255,255,.85); color:#fff; border-radius:99px;
+    padding:9px 26px; font-weight:700; font-size:12.5px; letter-spacing:.03em; cursor:pointer;
+  }
+  .ghost-btn:hover{ background:rgba(255,255,255,.12); }
+  .auth-mobile-toggle{ display:none; text-align:center; padding:0 24px 24px; font-size:12.5px; color:var(--muted); }
+  .auth-mobile-toggle button{ background:none; border:none; color:var(--accent); font-weight:700; cursor:pointer; padding:0; font-size:inherit; }
+
+  @media (max-width:680px){
+    .auth-brand{ position:static; margin-bottom:16px; justify-content:center; }
+    .auth-screen{ flex-direction:column; padding-top:12px; }
+    .auth-container{ min-height:0; }
+    .overlay-container{ display:none; }
+    .form-container{ position:relative; width:100%; height:auto; padding:32px 0 4px; transform:none !important; opacity:1 !important; z-index:1 !important; animation:none !important; }
+    .sign-up-container{ display:none; }
+    .auth-container.right-panel-active .sign-in-container{ display:none; }
+    .auth-container.right-panel-active .sign-up-container{ display:block; }
+    .auth-mobile-toggle{ display:block; }
+  }
+
+  /* ---- tenant self-view ---- */
+  .tenant-wrap{ max-width:640px; margin:0 auto; padding:40px 20px 64px; }
+  .tenant-card{ background:var(--surface); border:1px solid var(--line); border-radius:20px; padding:30px; box-shadow:var(--shadow); }
+  .tenant-hello{ color:var(--muted); font-size:13px; margin:0; }
+  .tenant-name{ font-size:26px; margin-top:2px; }
+  .center-screen{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px; text-align:center; }
+  .center-card{ max-width:420px; background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:32px; box-shadow:var(--shadow); }
+</style>
+</head>
+<body>
+
+<!-- ===================== LOADING (nunggu status login diperiksa) ===================== -->
+<div class="center-screen" id="screenLoading">
+  <p style="color:var(--muted);">Memuat…</p>
+</div>
+
+<!-- ===================== AUTH GATE (belum login) ===================== -->
+<div class="auth-screen" id="screenGate" hidden>
+  <div class="auth-brand"><span class="mark">BK</span><span>Buku Kos</span></div>
+  <div class="auth-container" id="authContainer">
+
+    <div class="form-container sign-up-container">
+      <form class="auth-form" id="signUpForm">
+        <h2>Daftar Akun Penyewa</h2>
+        <p class="sub">Pakai email yang SAMA persis dengan yang dikasih ke pemilik kos</p>
+        <div class="field"><input required name="name" placeholder="Nama Lengkap" /></div>
+        <div class="field"><input required type="email" name="email" placeholder="Email" /></div>
+        <div class="field"><input required type="password" name="password" placeholder="Password (min. 6 karakter)" minlength="6" /></div>
+        <button type="submit" class="btn btn-primary btn-block">Daftar</button>
+        <p class="auth-error" id="signUpError"></p>
+      </form>
+    </div>
+
+    <div class="form-container sign-in-container">
+      <form class="auth-form" id="signInForm">
+        <h2>Masuk</h2>
+        <p class="sub">Buat penyewa yang mau cek kamar &amp; jatuh tempo</p>
+        <div class="field"><input required type="email" name="email" placeholder="Email" /></div>
+        <div class="field"><input required type="password" name="password" placeholder="Password" /></div>
+        <button type="submit" class="btn btn-primary btn-block">Masuk</button>
+        <p class="auth-error" id="signInError"></p>
+      </form>
+    </div>
+
+    <div class="overlay-container">
+      <div class="overlay">
+        <div class="overlay-panel overlay-left">
+          <h2>Sudah Punya Akun?</h2>
+          <p>Masuk buat cek kamar, tanggal masuk, dan jatuh tempo bayar kamu.</p>
+          <button type="button" class="ghost-btn" data-auth-mode="signin">Masuk</button>
+        </div>
+        <div class="overlay-panel overlay-right">
+          <h2>Penyewa Baru?</h2>
+          <p>Daftar sekali pakai email yang udah dikasih ke pemilik kos.</p>
+          <button type="button" class="ghost-btn" data-auth-mode="signup">Daftar</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="auth-mobile-toggle" id="mobileToSignUp">Belum punya akun? <button type="button" data-auth-mode="signup">Daftar</button></p>
+    <p class="auth-mobile-toggle" id="mobileToSignIn" hidden>Sudah punya akun? <button type="button" data-auth-mode="signin">Masuk</button></p>
+  </div>
+</div>
+
+<!-- ===================== BELUM DIKAITKAN (login sukses, tapi bukan admin & email gak match penyewa manapun) ===================== -->
+<div class="center-screen" id="screenUnlinked" hidden>
+  <div class="center-card">
+    <h2 style="margin-bottom:10px;">Akun Belum Dikaitkan</h2>
+    <p style="color:var(--muted); font-size:13.5px; margin-bottom:6px;">
+      Akun kamu (<b id="unlinkedEmail" style="color:var(--ink);"></b>) belum kekaitin ke data penyewa manapun.
+    </p>
+    <p style="color:var(--muted); font-size:13.5px; margin-bottom:20px;">
+      Hubungi pemilik kos, minta didaftarin pakai email ini persis.
+    </p>
+    <button class="btn btn-ghost" id="btnLogoutUnlinked">Keluar</button>
+  </div>
+</div>
+
+<!-- ===================== ONBOARDING (penyewa baru isi data diri sekali) ===================== -->
+<div class="tenant-wrap" id="screenOnboarding" hidden>
+  <div class="topbar" style="max-width:640px; margin:0 auto 24px;">
+    <div class="brand"><span class="mark">BK</span><div><h1 style="font-size:18px;">Buku Kos</h1><div class="sub">Lengkapi data diri</div></div></div>
+    <button class="btn btn-ghost btn-sm" id="btnLogoutOnboarding">Keluar</button>
+  </div>
+  <div class="tenant-card">
+    <h2 style="margin-bottom:4px;">Selamat Datang! 👋</h2>
+    <p style="color:var(--muted); font-size:13px; margin-bottom:20px;">Isi data diri kamu sekali ini aja — dipakai pemilik kos buat data penghuni. Kalau nanti kamu keluar &amp; ngekos lagi di sini, data ini gak perlu diisi ulang.</p>
+    <form id="onboardForm">
+      <div class="field"><label>Nama Lengkap (sesuai KTP)</label><input required name="name" /></div>
+      <div class="field-row">
+        <div class="field"><label>NIK</label><input required name="nik" inputmode="numeric" maxlength="16" placeholder="16 digit"></div>
+        <div class="field"><label>No. HP</label><input required name="phone" placeholder="0812xxxxxxx"></div>
+      </div>
+      <div class="field"><label>Alamat Asal (KTP)</label><textarea required name="alamat"></textarea></div>
+      <div class="field-row">
+        <div class="field"><label>Nama Kontak Darurat</label><input required name="emergencyName" placeholder="Contoh: Ibu Sri (Ibu kandung)"></div>
+        <div class="field"><label>No. HP Kontak Darurat</label><input required name="emergencyPhone" placeholder="0812xxxxxxx"></div>
+      </div>
+      <div class="field">
+        <label>Foto KTP</label>
+        <input type="file" accept="image/*" name="ktpFile" id="ktpFile">
+        <img id="ktpPreview" hidden style="margin-top:8px; max-width:220px; border-radius:10px; border:1px solid var(--line);" />
+      </div>
+      <button type="submit" class="btn btn-primary btn-block" id="onboardSubmit">Simpan Data</button>
+      <p class="auth-error" id="onboardError"></p>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== TENANT VIEW (penyewa) ===================== -->
+<div class="tenant-wrap" id="screenTenant" hidden>
+  <div class="topbar" style="max-width:640px; margin:0 auto 24px;">
+    <div class="brand"><span class="mark">BK</span><div><h1 style="font-size:18px;">Buku Kos</h1><div class="sub">Info kamar kamu</div></div></div>
+    <button class="btn btn-ghost btn-sm" id="btnLogoutTenant">Keluar</button>
+  </div>
+  <div id="tenantCardRoot"></div>
+</div>
+
+<!-- ===================== ADMIN APP (pemilik kos) ===================== -->
+<div class="app" id="screenAdmin" hidden>
   <header class="topbar">
     <div class="brand">
       <span class="mark">BK</span>
@@ -267,6 +470,9 @@
       <div class="today">Hari ini<br><b id="todayLabel">—</b></div>
       <button class="theme-toggle" id="themeToggle" title="Ganti tampilan terang/gelap" aria-label="Ganti tema">
         <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.4 6.4-.7-.7M6.3 6.3l-.7-.7m12.8 0-.7.7M6.3 17.7l-.7.7M12 7a5 5 0 100 10 5 5 0 000-10z"/></svg>
+      </button>
+      <button class="icon-btn" id="btnLogoutAdmin" title="Keluar" aria-label="Keluar">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
       </button>
     </div>
   </header>
@@ -314,10 +520,11 @@
       </div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Nama</th><th>Kamar</th><th>No. HP</th><th>Tgl Masuk</th><th>Jatuh Tempo</th><th class="num">Deposit</th><th>Status</th><th></th></tr></thead>
+          <thead><tr><th>Nama</th><th>Kamar</th><th>Email</th><th>No. HP</th><th>Tgl Masuk</th><th>Jatuh Tempo</th><th class="num">Deposit</th><th>Status</th><th></th></tr></thead>
           <tbody id="tenantTable"></tbody>
         </table>
       </div>
+      <p class="hint" style="margin-top:8px;">Isi Email biar penyewa bisa daftar akun sendiri &amp; cek kamarnya lewat menu Masuk di halaman login.</p>
     </section>
   </div>
 
@@ -379,6 +586,54 @@
 <div id="modalRoot"></div>
 <div class="toast" id="toast"></div>
 
+<!-- =====================================================================
+     FIREBASE — bootstrap di module script terpisah (Auth + Firestore).
+     GANTI firebaseConfig di bawah dengan punya project kamu sendiri
+     (Firebase Console > Project Settings > Your apps > ikon web </>).
+     Sebelum config asli dipasang, halaman ini otomatis JALAN SEPERTI
+     SEBELUMNYA (localStorage, tanpa login) — gak ada yang rusak.
+     ===================================================================== -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+  import {
+    getAuth, onAuthStateChanged, signInWithEmailAndPassword,
+    createUserWithEmailAndPassword, updateProfile, signOut
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+  import {
+    getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc,
+    addDoc, collection, query, where, onSnapshot
+  } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
+
+  var firebaseConfig = {
+    apiKey: "GANTI_API_KEY",
+    authDomain: "GANTI.firebaseapp.com",
+    projectId: "GANTI_PROJECT_ID",
+    storageBucket: "GANTI.appspot.com",
+    messagingSenderId: "GANTI",
+    appId: "GANTI"
+  };
+
+  var configReady = firebaseConfig.apiKey.indexOf('GANTI') === -1;
+  window.__fbConfigReady = configReady;
+
+  if(configReady){
+    var fbApp = initializeApp(firebaseConfig);
+    var auth = getAuth(fbApp);
+    var dbFs = getFirestore(fbApp);
+    window.__fb = {
+      auth: auth, dbFs: dbFs,
+      onAuthStateChanged: onAuthStateChanged,
+      signIn: signInWithEmailAndPassword,
+      signUp: createUserWithEmailAndPassword,
+      updateProfile: updateProfile,
+      signOut: signOut,
+      doc: doc, getDoc: getDoc, setDoc: setDoc, updateDoc: updateDoc, deleteDoc: deleteDoc,
+      addDoc: addDoc, collection: collection, query: query, where: where, onSnapshot: onSnapshot
+    };
+  }
+  window.dispatchEvent(new Event('fb-ready'));
+</script>
+
 <script>
 (function(){
   "use strict";
@@ -397,7 +652,7 @@
   function todayISO(){ return new Date().toISOString().slice(0,10); }
   function currentPeriod(){ return todayISO().slice(0,7); }
   function periodLabel(period){
-    var parts = period.split('-'); var y = parts[0], m = parseInt(parts[1],10)-1;
+    var parts = (period||'').split('-'); var y = parts[0], m = parseInt(parts[1],10)-1;
     return MONTH_NAMES[m] + ' ' + y;
   }
   function shiftPeriod(period, delta){
@@ -419,12 +674,19 @@
     showToast._t = setTimeout(function(){ t.classList.remove('show'); }, 2200);
   }
 
+  function showScreen(name){
+    ['Loading','Gate','Unlinked','Onboarding','Tenant','Admin'].forEach(function(n){
+      document.getElementById('screen'+n).hidden = (n!==name);
+    });
+  }
+
   // ---------------------------------------------------------------
-  // State (disinkron live dari db, atau localStorage kalau db gak tersedia)
+  // State (disinkron live dari Firestore, atau localStorage kalau
+  // Firebase belum dikonfigurasi sama sekali)
   // ---------------------------------------------------------------
   var state = { rooms: [], tenants: [], payments: [], expenses: [] };
   var billPeriod = currentPeriod();
-  var db = null;
+  var db = null; // Firestore instance kalau lagi mode admin, null kalau mode localStorage
   var LS_KEY = 'buku-kos-fallback-v1';
 
   // Contoh data buat kunjungan PERTAMA kali doang (localStorage-nya belum
@@ -442,10 +704,10 @@
         {id:'r6', number:'6', type:'Standar, kipas', rent:750000}
       ],
       tenants: [
-        {id:'t1', name:'Rina Wulandari', phone:'0812-1111-2222', roomId:'r1', moveInDate:'2025-11-01', dueDay:5, deposit:750000, active:true},
-        {id:'t2', name:'Budi Santoso', phone:'0813-2222-3333', roomId:'r2', moveInDate:'2025-06-15', dueDay:15, deposit:1100000, active:true},
-        {id:'t3', name:'Siti Aminah', phone:'0821-3333-4444', roomId:'r3', moveInDate:'2026-01-10', dueDay:10, deposit:1100000, active:true},
-        {id:'t4', name:'Agus Prasetyo', phone:'0857-4444-5555', roomId:'r5', moveInDate:'2025-09-01', dueDay:1, deposit:1350000, active:true}
+        {id:'t1', name:'Rina Wulandari', email:'', phone:'0812-1111-2222', roomId:'r1', roomNumber:'1', rent:750000, moveInDate:'2025-11-01', dueDay:5, deposit:750000, active:true},
+        {id:'t2', name:'Budi Santoso', email:'', phone:'0813-2222-3333', roomId:'r2', roomNumber:'2', rent:1100000, moveInDate:'2025-06-15', dueDay:15, deposit:1100000, active:true, lastPaidPeriod: currentPeriod(), lastPaidDate: todayISO()},
+        {id:'t3', name:'Siti Aminah', email:'', phone:'0821-3333-4444', roomId:'r3', roomNumber:'3', rent:1100000, moveInDate:'2026-01-10', dueDay:10, deposit:1100000, active:true},
+        {id:'t4', name:'Agus Prasetyo', email:'', phone:'0857-4444-5555', roomId:'r5', roomNumber:'5', rent:1350000, moveInDate:'2025-09-01', dueDay:1, deposit:1350000, active:true}
       ],
       payments: [
         {id:'p1', tenantId:'t2', roomId:'r2', period: currentPeriod(), amount:1100000, paidDate: todayISO(), method:'transfer', note:''}
@@ -471,6 +733,7 @@
       try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
       try{ localStorage.setItem(LS_KEY+'-sample','1'); }catch(e){}
     }
+    showScreen('Admin');
     renderAll();
   }
   function persistLocal(){
@@ -479,41 +742,40 @@
   }
 
   // ---------------------------------------------------------------
-  // Lapisan data — collection() lewat db kalau ada, fallback array lokal
+  // Lapisan data — Firestore kalau db terisi (mode admin login),
+  // fallback array lokal (localStorage) kalau Firebase belum diatur.
   // ---------------------------------------------------------------
   function watchCollection(name){
-    if(!db){ return; }
-    db.collection(name).onSnapshot(function(snap){
+    if(!db) return;
+    var fb = window.__fb;
+    fb.onSnapshot(fb.collection(db, name), function(snap){
       state[name] = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
       renderAll();
-    }, function(err){
-      console.error('onSnapshot ' + name + ' error', err);
-    });
+    }, function(err){ console.error('onSnapshot ' + name + ' error', err); });
   }
-
-  function addDoc(name, data){
-    if(db){ return db.collection(name).add(data); }
+  function addDoc_(name, data){
+    if(db){ var fb=window.__fb; return fb.addDoc(fb.collection(db, name), data); }
     var id = uid();
     state[name].push(Object.assign({id:id}, data));
     persistLocal();
     return Promise.resolve({id:id});
   }
-  function setDoc(name, id, data){
-    if(db){ return db.doc(name+'/'+id).set(data); }
+  function setDoc_(name, id, data){
+    if(db){ var fb=window.__fb; return fb.setDoc(fb.doc(db, name, id), data); }
     var idx = state[name].findIndex(function(x){return x.id===id;});
     if(idx>=0) state[name][idx] = Object.assign({id:id}, data);
     persistLocal();
     return Promise.resolve();
   }
-  function updateDoc(name, id, patch){
-    if(db){ return db.doc(name+'/'+id).update(patch); }
+  function updateDoc_(name, id, patch){
+    if(db){ var fb=window.__fb; return fb.updateDoc(fb.doc(db, name, id), patch); }
     var idx = state[name].findIndex(function(x){return x.id===id;});
     if(idx>=0) Object.assign(state[name][idx], patch);
     persistLocal();
     return Promise.resolve();
   }
-  function deleteDoc(name, id){
-    if(db){ return db.doc(name+'/'+id).delete(); }
+  function deleteDoc_(name, id){
+    if(db){ var fb=window.__fb; return fb.deleteDoc(fb.doc(db, name, id)); }
     state[name] = state[name].filter(function(x){return x.id!==id;});
     persistLocal();
     return Promise.resolve();
@@ -571,7 +833,9 @@
     var cur = document.documentElement.getAttribute('data-theme');
     var sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     var dark = cur ? cur==='dark' : sysDark;
-    document.getElementById('themeIcon').innerHTML = dark
+    var el = document.getElementById('themeIcon');
+    if(!el) return;
+    el.innerHTML = dark
       ? '<path d="M21 12.5A8.5 8.5 0 1111.5 3 7 7 0 0021 12.5z" fill="currentColor" stroke="none"/>'
       : '<path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.4 6.4-.7-.7M6.3 6.3l-.7-.7m12.8 0-.7.7M6.3 17.7l-.7.7M12 7a5 5 0 100 10 5 5 0 000-10z"/>';
   }
@@ -582,7 +846,8 @@
   (function(){
     var d = new Date();
     var days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
-    document.getElementById('todayLabel').textContent = days[d.getDay()] + ', ' + d.getDate() + ' ' + MONTH_NAMES[d.getMonth()] + ' ' + d.getFullYear();
+    var el = document.getElementById('todayLabel');
+    if(el) el.textContent = days[d.getDay()] + ', ' + d.getDate() + ' ' + MONTH_NAMES[d.getMonth()] + ' ' + d.getFullYear();
   })();
 
   // ---------------------------------------------------------------
@@ -594,13 +859,22 @@
   function paymentFor(tenantId, period){ return state.payments.find(function(p){return p.tenantId===tenantId && p.period===period;}); }
 
   function dueStatus(tenant, todayDate){
-    // returns null (lunas / gak relevan) atau {level:'rust'|'amber', text}
     var dueDay = Math.min(tenant.dueDay||1, daysInMonth(currentPeriod()));
     var d = todayDate.getDate();
     var diff = dueDay - d;
     if(diff < 0) return {level:'rust', text:'Telat ' + (-diff) + ' hari'};
     if(diff <= 3) return {level:'amber', text: diff===0 ? 'Jatuh tempo hari ini' : 'H-'+diff+' (tgl '+dueDay+')'};
     return {level:'muted', text:'Jatuh tempo tgl '+dueDay};
+  }
+
+  // Rekap ulang `lastPaidPeriod`/`lastPaidDate` di dokumen tenant dari
+  // riwayat payments yang MASIH ADA — dipanggil abis "Batalkan" biar
+  // status di tenant portal balik akurat (bukan cuma nge-nol-in polos).
+  function recomputeLastPaid(tenantId){
+    var pays = state.payments.filter(function(p){return p.tenantId===tenantId;});
+    if(!pays.length){ return updateDoc_('tenants', tenantId, {lastPaidPeriod:null, lastPaidDate:null}); }
+    var latest = pays.reduce(function(a,b){ return b.period > a.period ? b : a; });
+    return updateDoc_('tenants', tenantId, {lastPaidPeriod:latest.period, lastPaidDate:latest.paidDate});
   }
 
   // ---------------------------------------------------------------
@@ -631,7 +905,6 @@
       return '<div class="stat"><div class="label">'+t.label+'</div><div class="value '+(t.cls||'')+'">'+t.value+'</div><div class="foot">'+t.foot+'</div></div>';
     }).join('');
 
-    // due list: semua penghuni aktif yg BELUM bayar periode ini, urut paling mendesak
     var today = new Date();
     var rows = belumBayarTenants.map(function(t){
       var st = dueStatus(t, today);
@@ -674,13 +947,14 @@
 
     var tbody = document.getElementById('tenantTable');
     if(!state.tenants.length){
-      tbody.innerHTML = '<tr><td colspan="8"><div class="empty">Belum ada penghuni tercatat.</div></td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9"><div class="empty">Belum ada penghuni tercatat.</div></td></tr>';
     } else {
       tbody.innerHTML = state.tenants.slice().sort(function(a,b){ return (b.active?1:0)-(a.active?1:0); }).map(function(t){
         var r = roomById(t.roomId);
         return '<tr>'+
           '<td><b>'+escapeHtml(t.name)+'</b></td>'+
           '<td>'+(r?escapeHtml(r.number):'—')+'</td>'+
+          '<td>'+escapeHtml(t.email||'—')+'</td>'+
           '<td>'+escapeHtml(t.phone||'—')+'</td>'+
           '<td>'+(t.moveInDate||'—')+'</td>'+
           '<td>tgl '+ (t.dueDay||'—') +'</td>'+
@@ -699,7 +973,6 @@
     document.getElementById('billMonthLabel').textContent = periodLabel(billPeriod);
     var tbody = document.getElementById('billTable');
     var tenants = state.tenants.filter(function(t){
-      // tampilkan penghuni aktif SEKARANG, atau yg aktif waktu itu (heuristik: moveInDate <= akhir periode)
       return t.active!==false || (t.moveInDate && t.moveInDate.slice(0,7) <= billPeriod);
     });
     if(!tenants.length){
@@ -780,14 +1053,10 @@
 
   function renderChart(){
     var data = window._reportData; if(!data) return;
-    var svg = document.getElementById('netChart');
+    var svg = document.getElementById('netChart'); if(!svg) return;
     var W=560,H=220, padL=64, padR=14, padT=14, padB=28;
     var plotW = W-padL-padR, plotH = H-padT-padB;
     var maxAbs = Math.max(10000, data.reduce(function(m,d){return Math.max(m, Math.abs(d.net));},0));
-    // gridlines rounder ke atas
-    // Bug nyata ketemu pas preview: versi lama cuma dobelin niceMax SEKALI,
-    // jadi kalau maxAbs > 2x basis 10-nya, bar-nya nembus ke luar viewBox
-    // (kepotong di atas). Loop terus dobelin sampai beneran >= maxAbs.
     var niceMax = Math.pow(10, Math.floor(Math.log10(maxAbs)));
     while(niceMax < maxAbs) niceMax *= 2;
     var zeroY = padT + plotH/2;
@@ -802,7 +1071,6 @@
     var cMuted = css.getPropertyValue('--muted').trim();
 
     var svgParts = [];
-    // gridlines: 0 dan +-max
     [-niceMax, 0, niceMax].forEach(function(v){
       var y = zeroY - v*scale;
       svgParts.push('<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="'+cLine+'" stroke-width="1" />');
@@ -877,14 +1145,24 @@
         var del = root.querySelector('#delRoom');
         if(del) del.addEventListener('click', function(){
           if(tenantForRoom(existing.id)){ showToast('Gak bisa hapus — kamar masih ada penghuni aktif'); return; }
-          deleteDoc('rooms', existing.id); closeModal(); showToast('Kamar dihapus');
+          deleteDoc_('rooms', existing.id); closeModal(); showToast('Kamar dihapus');
         });
         root.querySelector('#roomForm').addEventListener('submit', function(e){
           e.preventDefault();
           var f = e.target;
           var data = { number: f.number.value.trim(), type: f.type.value.trim(), rent: Number(f.rent.value)||0 };
-          var p = isEdit ? updateDoc('rooms', existing.id, data) : addDoc('rooms', data);
-          p.then(function(){ closeModal(); showToast(isEdit?'Kamar diperbarui':'Kamar ditambahkan'); });
+          var p = isEdit ? updateDoc_('rooms', existing.id, data) : addDoc_('rooms', data);
+          p.then(function(){
+            closeModal(); showToast(isEdit?'Kamar diperbarui':'Kamar ditambahkan');
+            if(isEdit){
+              // Sinkron ulang salinan nomor/harga yang ditempel di dokumen
+              // tenant (tenant portal cuma boleh baca dokumennya sendiri,
+              // gak boleh baca collection rooms — makanya nomor & harga
+              // kamar DITEMPEL/didenormalisasi ke tenant, bukan di-join).
+              var occ = tenantForRoom(existing.id);
+              if(occ) updateDoc_('tenants', occ.id, {roomNumber:data.number, rent:data.rent});
+            }
+          });
         });
       }
     );
@@ -910,6 +1188,7 @@
       '<h3>'+(isEdit?'Ubah Penghuni':'Tambah Penghuni')+'</h3>'+
       '<form id="tenantForm">'+
         '<div class="field"><label>Nama</label><input required name="name" value="'+(existing?escapeHtml(existing.name):'')+'"></div>'+
+        '<div class="field"><label>Email (buat login penyewa)</label><input type="email" name="email" value="'+(existing?escapeHtml(existing.email||''):'')+'" placeholder="email@contoh.com"></div>'+
         '<div class="field-row">'+
           '<div class="field"><label>No. HP</label><input name="phone" value="'+(existing?escapeHtml(existing.phone||''):'')+'"></div>'+
           '<div class="field"><label>Kamar</label><select name="roomId" required><option value="">— pilih —</option>'+roomOptions+'</select></div>'+
@@ -920,6 +1199,16 @@
         '</div>'+
         '<div class="field"><label>Deposit (Rp, opsional)</label><input type="number" min="0" name="deposit" value="'+(existing?existing.deposit||0:0)+'"></div>'+
         (isEdit ? '<div class="field"><label><input type="checkbox" name="active" '+(existing.active===false?'':'checked')+' style="width:auto; margin-right:6px;">Masih tinggal di kos</label></div>' : '')+
+        '<div style="border-top:1px solid var(--line); margin:16px 0 13px; padding-top:13px;">'+
+          '<p style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:10px;">Data Diri (diisi penyewa sendiri lewat Login)</p>'+
+          '<div class="field-row">'+
+            '<div class="field"><label>NIK</label><input name="nik" maxlength="16" value="'+(existing?escapeHtml(existing.nik||''):'')+'" placeholder="Belum diisi"></div>'+
+            '<div class="field"><label>No. HP Kontak Darurat</label><input name="emergencyPhone" value="'+(existing?escapeHtml(existing.emergencyPhone||''):'')+'"></div>'+
+          '</div>'+
+          '<div class="field"><label>Nama Kontak Darurat</label><input name="emergencyName" value="'+(existing?escapeHtml(existing.emergencyName||''):'')+'"></div>'+
+          '<div class="field"><label>Alamat KTP</label><textarea name="alamat">'+(existing?escapeHtml(existing.alamat||''):'')+'</textarea></div>'+
+          (existing && existing.ktpPhoto ? '<div class="field"><label>Foto KTP</label><img src="'+existing.ktpPhoto+'" style="max-width:220px; border-radius:10px; border:1px solid var(--line);"></div>' : '<p class="hint">Foto KTP belum diupload.</p>')+
+        '</div>'+
         '<div class="modal-actions">'+
           '<button type="button" class="btn btn-ghost" id="cancelBtn">Batal</button>'+
           '<button type="submit" class="btn btn-primary">Simpan</button>'+
@@ -930,14 +1219,18 @@
         root.querySelector('#tenantForm').addEventListener('submit', function(e){
           e.preventDefault();
           var f = e.target;
+          var room = roomById(f.roomId.value);
           var data = {
-            name: f.name.value.trim(), phone: f.phone.value.trim(), roomId: f.roomId.value,
+            name: f.name.value.trim(), email: f.email.value.trim().toLowerCase(), phone: f.phone.value.trim(), roomId: f.roomId.value,
+            roomNumber: room ? room.number : '', rent: room ? room.rent : 0,
             moveInDate: f.moveInDate.value, dueDay: Math.max(1,Math.min(31,Number(f.dueDay.value)||1)),
-            deposit: Number(f.deposit.value)||0
+            deposit: Number(f.deposit.value)||0,
+            nik: f.nik.value.trim(), emergencyName: f.emergencyName.value.trim(),
+            emergencyPhone: f.emergencyPhone.value.trim(), alamat: f.alamat.value.trim()
           };
           if(isEdit) data.active = f.active ? f.active.checked : true;
           else data.active = true;
-          var p = isEdit ? updateDoc('tenants', existing.id, data) : addDoc('tenants', data);
+          var p = isEdit ? updateDoc_('tenants', existing.id, data) : addDoc_('tenants', data);
           p.then(function(){ closeModal(); showToast(isEdit?'Data penghuni diperbarui':'Penghuni ditambahkan'); });
         });
       }
@@ -974,11 +1267,19 @@
         root.querySelector('#payForm').addEventListener('submit', function(e){
           e.preventDefault();
           var f = e.target;
-          addDoc('payments', {
+          addDoc_('payments', {
             tenantId: tenantId, roomId: t.roomId, period: period,
             amount: Number(f.amount.value)||0, paidDate: f.paidDate.value,
             method: f.method.value, note: f.note.value.trim()
-          }).then(function(){ closeModal(); showToast('Pembayaran dicatat'); });
+          }).then(function(){
+            closeModal(); showToast('Pembayaran dicatat');
+            // Tempelin status "udah bayar" ke dokumen tenant (buat tenant
+            // portal) cuma kalau periode ini yang PALING BARU dibayar —
+            // perbandingan string YYYY-MM aman dibandingin langsung.
+            if(!t.lastPaidPeriod || period >= t.lastPaidPeriod){
+              updateDoc_('tenants', tenantId, {lastPaidPeriod: period, lastPaidDate: f.paidDate.value});
+            }
+          });
         });
       }
     );
@@ -987,9 +1288,16 @@
     var mp = e.target.closest('[data-mark-paid]');
     if(mp){ payForm(mp.dataset.markPaid, mp.dataset.period || currentPeriod()); return; }
     var up = e.target.closest('[data-unpay]');
-    if(up){ deleteDoc('payments', up.dataset.unpay).then(function(){ showToast('Pembayaran dibatalkan'); }); return; }
+    if(up){
+      var payId = up.dataset.unpay;
+      var pay = state.payments.find(function(p){return p.id===payId;});
+      deleteDoc_('payments', payId).then(function(){
+        return pay ? recomputeLastPaid(pay.tenantId) : null;
+      }).then(function(){ showToast('Pembayaran dibatalkan'); });
+      return;
+    }
     var de = e.target.closest('[data-del-expense]');
-    if(de){ deleteDoc('expenses', de.dataset.delExpense).then(function(){ showToast('Pengeluaran dihapus'); }); return; }
+    if(de){ deleteDoc_('expenses', de.dataset.delExpense).then(function(){ showToast('Pengeluaran dihapus'); }); return; }
   });
 
   // ---------------------------------------------------------------
@@ -1015,39 +1323,244 @@
         root.querySelector('#expForm').addEventListener('submit', function(e){
           e.preventDefault();
           var f = e.target;
-          addDoc('expenses', { date: f.date.value, category: f.category.value, amount: Number(f.amount.value)||0, note: f.note.value.trim() })
+          addDoc_('expenses', { date: f.date.value, category: f.category.value, amount: Number(f.amount.value)||0, note: f.note.value.trim() })
             .then(function(){ closeModal(); showToast('Pengeluaran dicatat'); });
         });
       }
     );
   });
 
-  // ---------------------------------------------------------------
-  // Boot: coba db, fallback localStorage
-  // ---------------------------------------------------------------
-  renderAll();
   document.getElementById('dismissSample').addEventListener('click', function(){
     window._isSample = false;
-    if(db){ db.doc('meta/seed').delete().catch(function(){}); }
-    else { try{ localStorage.setItem(LS_KEY+'-sample','0'); }catch(e){} }
+    if(!db){ try{ localStorage.setItem(LS_KEY+'-sample','0'); }catch(e){} }
     renderAll();
   });
-  if(window.claude && window.claude.use){
-    window.claude.use('db').then(function(d){
-      if(!d){ useLocalStorage(); return; }
-      db = d;
-      ['rooms','tenants','payments','expenses'].forEach(watchCollection);
-      // "Ini contoh data" banner — nyala kalau Claude nyeed data awal
-      // (ditandain lewat dokumen meta/seed), ilang sendiri begitu
-      // dokumen itu dihapus (baik lewat tombol dismiss atau manual).
-      db.doc('meta/seed').onSnapshot(function(snap){
-        window._isSample = !!(snap.exists && snap.data().isSample);
-        renderAll();
-      }, function(){});
-    }).catch(function(){ useLocalStorage(); });
-    setTimeout(function(){ if(!db && !state.rooms.length) useLocalStorage(); }, 2500);
-  } else {
-    useLocalStorage();
+
+  // =================================================================
+  // AUTH GATE — toggle Sign In / Sign Up (overlay geser) + submit
+  // =================================================================
+  document.querySelectorAll('[data-auth-mode]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var mode = btn.dataset.authMode;
+      document.getElementById('authContainer').classList.toggle('right-panel-active', mode==='signup');
+      document.getElementById('mobileToSignUp').hidden = (mode==='signup');
+      document.getElementById('mobileToSignIn').hidden = (mode!=='signup');
+    });
+  });
+
+  function tenantDueStatusHtml(t){
+    var period = currentPeriod();
+    if(t.lastPaidPeriod === period){
+      return {pill:'<span class="pill pill-sage">Lunas bulan ini</span>', extra:''};
+    }
+    var todayD = new Date();
+    var dueDay = Math.min(t.dueDay||1, daysInMonth(period));
+    var diff = dueDay - todayD.getDate();
+    if(diff<0) return {pill:'<span class="pill pill-rust">Telat '+(-diff)+' hari</span>', extra:''};
+    if(diff<=3) return {pill:'<span class="pill pill-amber">'+(diff===0?'Jatuh tempo hari ini':'H-'+diff+' (tgl '+dueDay+')')+'</span>', extra:''};
+    return {pill:'<span class="pill pill-muted">Jatuh tempo tgl '+dueDay+'</span>', extra:''};
   }
+
+  function renderTenantCard(t){
+    var st = tenantDueStatusHtml(t);
+    document.getElementById('tenantCardRoot').innerHTML =
+      '<div class="tenant-card">'+
+        '<p class="tenant-hello">Halo,</p>'+
+        '<h1 class="tenant-name">'+escapeHtml(t.name)+'</h1>'+
+        (!t.roomNumber
+          ? '<div class="empty" style="margin-top:20px;"><b>Belum di-assign kamar</b>Data kamu udah masuk — tinggal nunggu pemilik kos assign kamar &amp; harga sewanya.</div>'
+          : '<div class="stat-row" style="margin-top:20px;">'+
+              '<div class="stat"><div class="label">Kamar</div><div class="value">'+escapeHtml(t.roomNumber||'—')+'</div></div>'+
+              '<div class="stat"><div class="label">Sewa / Bulan</div><div class="value num">'+fmtRupiah(t.rent)+'</div></div>'+
+              '<div class="stat"><div class="label">Mulai Ngekos</div><div class="value" style="font-size:15px;">'+(t.moveInDate||'—')+'</div></div>'+
+              '<div class="stat"><div class="label">Jatuh Tempo</div><div class="value" style="font-size:15px;">Tgl '+(t.dueDay||'—')+' tiap bulan</div></div>'+
+            '</div>'+
+            '<div style="margin-top:18px; display:flex; align-items:center; gap:8px;">Status bulan ini: '+st.pill+'</div>'+
+            (t.lastPaidDate ? '<p class="hint" style="margin-top:8px; color:var(--muted); font-size:12.5px;">Terakhir bayar: '+t.lastPaidDate+' ('+periodLabel(t.lastPaidPeriod)+')</p>' : ''))+
+      '</div>';
+  }
+
+  // -----------------------------------------------------------------
+  // Onboarding: form biodata sekali-isi (NIK, alamat, kontak darurat,
+  // foto KTP) — dipisah dari data operasional (kamar/sewa) biar
+  // AWET kalau penyewa keluar-masuk lagi (lihat komentar di
+  // resolveRoleAndShow: dokumen tenant gak pernah dihapus, cuma
+  // ditandain `active:false`, jadi biodata ini gak perlu diisi ulang).
+  // -----------------------------------------------------------------
+  var onboardTenantId = null;
+  function prepOnboardForm(t){
+    onboardTenantId = t.id;
+    var f = document.getElementById('onboardForm');
+    f.name.value = t.name || '';
+    f.nik.value = t.nik || '';
+    f.phone.value = t.phone || '';
+    f.alamat.value = t.alamat || '';
+    f.emergencyName.value = t.emergencyName || '';
+    f.emergencyPhone.value = t.emergencyPhone || '';
+    var img = document.getElementById('ktpPreview');
+    if(t.ktpPhoto){ img.src = t.ktpPhoto; img.hidden = false; } else { img.hidden = true; img.src=''; }
+    document.getElementById('onboardError').textContent = '';
+  }
+
+  // Kompres foto KTP di BROWSER sebelum disimpen (bukan diupload ke
+  // Firebase Storage — itu produk terpisah yang sekarang wajib paket
+  // BERBAYAR/Blaze, sedangkan Firestore yang udah dipakai buat semua
+  // data lain masih gratis). Diresize maks 900px + JPEG kualitas 0.6
+  // biar muat jauh di bawah batas 1MB per dokumen Firestore.
+  function compressImage(file, cb){
+    var reader = new FileReader();
+    reader.onload = function(e){
+      var img = new Image();
+      img.onload = function(){
+        var scale = Math.min(1, 900/img.width);
+        var w = Math.round(img.width*scale), h = Math.round(img.height*scale);
+        var canvas = document.createElement('canvas');
+        canvas.width = w; canvas.height = h;
+        canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+        cb(canvas.toDataURL('image/jpeg', 0.6));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+  document.getElementById('ktpFile').addEventListener('change', function(e){
+    var file = e.target.files[0]; if(!file) return;
+    compressImage(file, function(dataUrl){
+      var img = document.getElementById('ktpPreview');
+      img.src = dataUrl; img.hidden = false;
+      img.dataset.pending = dataUrl; // nempel sementara, kesimpen pas submit
+    });
+  });
+  document.getElementById('onboardForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var f = e.target, err = document.getElementById('onboardError');
+    var nik = f.nik.value.trim();
+    if(!/^\d{16}$/.test(nik)){ err.textContent = 'NIK harus 16 digit angka.'; return; }
+    err.textContent = '';
+    var btn = document.getElementById('onboardSubmit');
+    btn.disabled = true; btn.textContent = 'Menyimpan...';
+    var img = document.getElementById('ktpPreview');
+    var patch = {
+      name: f.name.value.trim(), nik: nik, phone: f.phone.value.trim(),
+      alamat: f.alamat.value.trim(), emergencyName: f.emergencyName.value.trim(),
+      emergencyPhone: f.emergencyPhone.value.trim()
+    };
+    if(img.dataset.pending) patch.ktpPhoto = img.dataset.pending;
+    var fb = window.__fb;
+    fb.updateDoc(fb.doc(fb.dbFs,'tenants',onboardTenantId), patch).then(function(){
+      showToast('Data diri tersimpan');
+    }).catch(function(ex){
+      err.textContent = 'Gagal simpan: ' + (ex.message||ex.code||ex);
+    }).finally(function(){
+      btn.disabled = false; btn.textContent = 'Simpan Data';
+    });
+  });
+
+  var unsubTenant = null;
+  function stopTenantWatch(){ if(unsubTenant){ unsubTenant(); unsubTenant=null; } }
+
+  function resolveRoleAndShow(user){
+    var fb = window.__fb;
+    fb.getDoc(fb.doc(fb.dbFs, 'admins', user.uid)).then(function(adminSnap){
+      if(adminSnap.exists()){
+        db = fb.dbFs;
+        ['rooms','tenants','payments','expenses'].forEach(watchCollection);
+        showScreen('Admin');
+        renderAll();
+        return;
+      }
+      // Bukan admin — coba cariin dokumen tenant yg email-nya sama persis.
+      // Belum ketemu? Bikin dokumen tenant BARU otomatis (belum ada kamar,
+      // belum ada biodata) — biar penyewa baru bisa langsung isi data diri
+      // sendiri dari sini, gak perlu nunggu pemilik kos bikinin dulu.
+      // Ketemu tapi biodata (NIK) masih kosong? Berarti ini penghuni lama
+      // yang direaktifin lagi (`active` dibalik true) TANPA dihapus
+      // datanya, atau baru numpuk record kosong — dua-duanya kekap di
+      // Onboarding sampai NIK keisi.
+      var email = (user.email||'').toLowerCase();
+      var q = fb.query(fb.collection(fb.dbFs, 'tenants'), fb.where('email','==', email));
+      stopTenantWatch();
+      unsubTenant = fb.onSnapshot(q, function(snap){
+        if(snap.empty){
+          fb.addDoc(fb.collection(fb.dbFs,'tenants'), {
+            name: user.displayName || '', email: email, phone: '', roomId: '', roomNumber: '', rent: 0,
+            moveInDate: todayISO(), dueDay: 1, deposit: 0, active: true
+          }).catch(function(err){ console.error('gagal bikin tenant baru', err); });
+          return; // onSnapshot bakal nembak ulang otomatis begitu dokumennya kebuat
+        }
+        var t = Object.assign({id: snap.docs[0].id}, snap.docs[0].data());
+        if(!t.nik){ showScreen('Onboarding'); prepOnboardForm(t); }
+        else { showScreen('Tenant'); renderTenantCard(t); }
+      }, function(err){
+        console.error('tenant lookup error', err);
+        document.getElementById('unlinkedEmail').textContent = user.email || '';
+        showScreen('Unlinked');
+      });
+    }).catch(function(err){
+      console.error('admin check error', err);
+      showScreen('Unlinked');
+    });
+  }
+
+  function bootFirebase(){
+    if(!window.__fbConfigReady){
+      // Firebase belum dikonfigurasi — jalan kayak sebelumnya (localStorage,
+      // tanpa gerbang login), biar situs yang udah live gak mendadak rusak.
+      useLocalStorage();
+      return;
+    }
+    var fb = window.__fb;
+    fb.onAuthStateChanged(fb.auth, function(user){
+      if(!user){
+        db = null; stopTenantWatch();
+        showScreen('Gate');
+        return;
+      }
+      showScreen('Loading');
+      resolveRoleAndShow(user);
+    });
+  }
+  if(window.__fb !== undefined || window.__fbConfigReady !== undefined) bootFirebase();
+  else window.addEventListener('fb-ready', bootFirebase);
+
+  // ---- Sign In ----
+  document.getElementById('signInForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var f = e.target, fb = window.__fb, err = document.getElementById('signInError');
+    err.textContent = '';
+    fb.signIn(fb.auth, f.email.value.trim(), f.password.value).catch(function(ex){
+      err.textContent = friendlyAuthError(ex.code);
+    });
+  });
+  // ---- Sign Up ----
+  document.getElementById('signUpForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var f = e.target, fb = window.__fb, err = document.getElementById('signUpError');
+    err.textContent = '';
+    fb.signUp(fb.auth, f.email.value.trim(), f.password.value).then(function(cred){
+      return fb.updateProfile(cred.user, {displayName: f.name.value.trim()});
+    }).catch(function(ex){
+      err.textContent = friendlyAuthError(ex.code);
+    });
+  });
+  function friendlyAuthError(code){
+    var map = {
+      'auth/email-already-in-use':'Email ini udah pernah daftar — coba Masuk aja.',
+      'auth/invalid-email':'Format email gak valid.',
+      'auth/weak-password':'Password kependekan, minimal 6 karakter.',
+      'auth/user-not-found':'Email belum terdaftar.',
+      'auth/wrong-password':'Password salah.',
+      'auth/invalid-credential':'Email atau password salah.',
+      'auth/too-many-requests':'Kebanyakan percobaan gagal — coba lagi sebentar.'
+    };
+    return map[code] || ('Gagal: ' + code);
+  }
+  // ---- Logout (3 tombol, satu handler) ----
+  ['btnLogoutAdmin','btnLogoutTenant','btnLogoutUnlinked','btnLogoutOnboarding'].forEach(function(id){
+    var b = document.getElementById(id);
+    if(b) b.addEventListener('click', function(){ window.__fb && window.__fb.signOut(window.__fb.auth); });
+  });
 })();
 </script>
+</body>
+</html>
