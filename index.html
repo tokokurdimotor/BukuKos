@@ -588,10 +588,10 @@
 
 <!-- =====================================================================
      FIREBASE — bootstrap di module script terpisah (Auth + Firestore).
-     GANTI firebaseConfig di bawah dengan punya project kamu sendiri
-     (Firebase Console > Project Settings > Your apps > ikon web </>).
-     Sebelum config asli dipasang, halaman ini otomatis JALAN SEPERTI
-     SEBELUMNYA (localStorage, tanpa login) — gak ada yang rusak.
+     Project: buku-kos (buku-kos-50e3d). apiKey Firebase itu sengaja
+     BUKAN rahasia — dia cuma nunjuk ke project mana, keamanan beneran
+     ditentuin Firestore Security Rules + Authentication, bukan dari
+     nyembunyiin nilai ini (lihat dokumentasi resmi Firebase soal ini).
      ===================================================================== -->
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
@@ -605,12 +605,12 @@
   } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore.js";
 
   var firebaseConfig = {
-    apiKey: "GANTI_API_KEY",
-    authDomain: "GANTI.firebaseapp.com",
-    projectId: "GANTI_PROJECT_ID",
-    storageBucket: "GANTI.appspot.com",
-    messagingSenderId: "GANTI",
-    appId: "GANTI"
+    apiKey: "AIzaSyCEd4KZxEk-HCRJduBNy2qzKoc1oFWUJ84",
+    authDomain: "buku-kos-50e3d.firebaseapp.com",
+    projectId: "buku-kos-50e3d",
+    storageBucket: "buku-kos-50e3d.firebasestorage.app",
+    messagingSenderId: "828512816987",
+    appId: "1:828512816987:web:a2eb684a1f619f28d6147e"
   };
 
   var configReady = firebaseConfig.apiKey.indexOf('GANTI') === -1;
