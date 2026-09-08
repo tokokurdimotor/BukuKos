@@ -296,6 +296,14 @@
   .auth-form .sub{ font-size:12.5px; color:var(--muted); margin-bottom:18px; }
   .auth-form .field{ text-align:left; }
   .auth-error{ color:var(--rust); font-size:12.5px; margin-top:4px; min-height:1.4em; }
+  .pw-field{ position:relative; }
+  .pw-field input{ padding-right:38px; }
+  .pw-toggle{
+    position:absolute; right:4px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; font-size:15px; line-height:1;
+    padding:6px 8px; opacity:.6; border-radius:8px;
+  }
+  .pw-toggle:hover{ opacity:1; background:var(--surface-2); }
   .overlay-container{
     position:absolute; top:0; left:50%; width:50%; height:100%; overflow:hidden;
     transition:transform .6s ease-in-out; z-index:100;
@@ -365,7 +373,10 @@
         <p class="sub">Pakai email yang SAMA persis dengan yang dikasih ke pemilik kos</p>
         <div class="field"><input required name="name" placeholder="Nama Lengkap" /></div>
         <div class="field"><input required type="email" name="email" placeholder="Email" /></div>
-        <div class="field"><input required type="password" name="password" placeholder="Password (min. 6 karakter)" minlength="6" /></div>
+        <div class="field pw-field">
+          <input required type="password" name="password" placeholder="Password (min. 6 karakter)" minlength="6" />
+          <button type="button" class="pw-toggle" aria-label="Tampilkan password">👁</button>
+        </div>
         <button type="submit" class="btn btn-primary btn-block">Daftar</button>
         <p class="auth-error" id="signUpError"></p>
       </form>
@@ -376,7 +387,10 @@
         <h2>Masuk</h2>
         <p class="sub">Buat penyewa yang mau cek kamar &amp; jatuh tempo</p>
         <div class="field"><input required type="email" name="email" placeholder="Email" /></div>
-        <div class="field"><input required type="password" name="password" placeholder="Password" /></div>
+        <div class="field pw-field">
+          <input required type="password" name="password" placeholder="Password" />
+          <button type="button" class="pw-toggle" aria-label="Tampilkan password">👁</button>
+        </div>
         <button type="submit" class="btn btn-primary btn-block">Masuk</button>
         <p class="auth-error" id="signInError"></p>
       </form>
@@ -1339,6 +1353,17 @@
   // =================================================================
   // AUTH GATE — toggle Sign In / Sign Up (overlay geser) + submit
   // =================================================================
+  // Tombol mata 👁 — toggle type="password" <-> "text" biar bisa cek
+  // sendiri huruf yang diketik udah bener sebelum submit.
+  document.querySelectorAll('.pw-toggle').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var input = btn.previousElementSibling;
+      var showing = input.type === 'text';
+      input.type = showing ? 'password' : 'text';
+      btn.textContent = showing ? '👁' : '🙈';
+    });
+  });
+
   document.querySelectorAll('[data-auth-mode]').forEach(function(btn){
     btn.addEventListener('click', function(){
       var mode = btn.dataset.authMode;
