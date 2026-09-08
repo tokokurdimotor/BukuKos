@@ -1304,7 +1304,12 @@
           '</div>'+
           '<div class="field"><label>Nama Kontak Darurat</label><input name="emergencyName" value="'+(existing?escapeHtml(existing.emergencyName||''):'')+'"></div>'+
           '<div class="field"><label>Alamat KTP</label><textarea name="alamat">'+(existing?escapeHtml(existing.alamat||''):'')+'</textarea></div>'+
-          (existing && existing.ktpPhoto ? '<div class="field"><label>Foto KTP</label><img src="'+existing.ktpPhoto+'" style="max-width:220px; border-radius:10px; border:1px solid var(--line);"></div>' : '<p class="hint">Foto KTP belum diupload.</p>')+
+          '<div class="field">'+
+            '<label>Foto KTP</label>'+
+            '<input type="file" accept="image/*" id="adminKtpFile" style="position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;">'+
+            '<button type="button" class="btn btn-block" id="adminKtpBtn" style="justify-content:center;">'+(existing && existing.ktpPhoto ? '📷 Ganti Foto' : '📷 Upload Foto KTP')+'</button>'+
+            '<img id="adminKtpPreview" '+(existing && existing.ktpPhoto ? 'src="'+existing.ktpPhoto+'"' : 'hidden')+' style="margin-top:10px; max-width:220px; border-radius:10px; border:1px solid var(--line);">'+
+          '</div>'+
         '</div>'+
         '<div class="modal-actions">'+
           '<button type="button" class="btn btn-ghost" id="cancelBtn">Batal</button>'+
@@ -1313,6 +1318,20 @@
       '</form>',
       function(root){
         root.querySelector('#cancelBtn').addEventListener('click', closeModal);
+        // Owner/Admin juga bisa upload foto KTP langsung dari sini (PC),
+        // gak wajib nunggu penyewa isi sendiri lewat login-nya.
+        var adminKtpFile = root.querySelector('#adminKtpFile');
+        var adminKtpBtn = root.querySelector('#adminKtpBtn');
+        var adminKtpPreview = root.querySelector('#adminKtpPreview');
+        adminKtpBtn.addEventListener('click', function(){ adminKtpFile.click(); });
+        adminKtpFile.addEventListener('change', function(e){
+          var file = e.target.files[0]; if(!file) return;
+          compressImage(file, function(dataUrl){
+            adminKtpPreview.src = dataUrl; adminKtpPreview.hidden = false;
+            adminKtpPreview.dataset.pending = dataUrl;
+            adminKtpBtn.textContent = '📷 Ganti Foto';
+          });
+        });
         // Tanggal Jatuh Tempo otomatis NGIKUTIN Tanggal Masuk (tagihan
         // bulan berikutnya jatuh di tanggal yang sama kayak dia pindah,
         // bukan mentok tanggal 1) — berhenti ngikut kalau field-nya udah
@@ -1339,6 +1358,7 @@
             nik: f.nik.value.trim(), emergencyName: f.emergencyName.value.trim(),
             emergencyPhone: f.emergencyPhone.value.trim(), alamat: f.alamat.value.trim()
           };
+          if(adminKtpPreview.dataset.pending) data.ktpPhoto = adminKtpPreview.dataset.pending;
           if(isEdit) data.active = f.active ? f.active.checked : true;
           else data.active = true;
           var p = isEdit ? updateDoc_('tenants', existing.id, data) : addDoc_('tenants', data);
