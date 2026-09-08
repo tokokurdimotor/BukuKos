@@ -1,0 +1,1053 @@
+<title>Buku Kos</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ---- tokens: light (bare :root = un-stamped / light default) ---- */
+    --ink:#11151c;            /* near-black, cool bias — primary text */
+    --ink-soft:#4c5566;
+    --paper:#f5f6f9;          /* cool off-white — page ground */
+    --surface:#ffffff;        /* card ground */
+    --surface-2:#eef0f5;      /* recessed / hover ground */
+    --line:#e3e6ee;
+    --line-soft:#edeef3;
+    --muted:#828a9b;
+    --accent:#5b5bd6;         /* primary — indigo-violet, interactive/active */
+    --accent-soft:#eceafc;
+    --accent-ink:#ffffff;     /* text on accent fill */
+    --sage:#1f9d63;           /* good / lunas */
+    --sage-soft:#e1f5ea;
+    --amber:#d97a06;          /* warning / mendekati jatuh tempo */
+    --amber-soft:#fbedd9;
+    --rust:#e5484d;           /* critical / telat */
+    --rust-soft:#fce3e4;
+    --shadow: 0 1px 2px rgba(17,21,28,.04), 0 14px 32px -14px rgba(17,21,28,.16);
+    --font-display:'Manrope', 'Segoe UI', system-ui, sans-serif;
+    --font-body:'Manrope', 'Segoe UI', system-ui, sans-serif;
+    --font-mono:'IBM Plex Mono', ui-monospace, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --ink:#eef0f5; --ink-soft:#b7bccb;
+      --paper:#0c0e13; --surface:#151822; --surface-2:#1d212c;
+      --line:#282d3a; --line-soft:#212632; --muted:#7d859a;
+      --accent:#8484ea; --accent-soft:#242244; --accent-ink:#0c0e13;
+      --sage:#4ad48e; --sage-soft:#123324;
+      --amber:#f0a63f; --amber-soft:#3a2a12;
+      --rust:#f5767a; --rust-soft:#3d1e21;
+      --shadow: 0 1px 2px rgba(0,0,0,.4), 0 16px 36px -14px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ink:#eef0f5; --ink-soft:#b7bccb;
+    --paper:#0c0e13; --surface:#151822; --surface-2:#1d212c;
+    --line:#282d3a; --line-soft:#212632; --muted:#7d859a;
+    --accent:#8484ea; --accent-soft:#242244; --accent-ink:#0c0e13;
+    --sage:#4ad48e; --sage-soft:#123324;
+    --amber:#f0a63f; --amber-soft:#3a2a12;
+    --rust:#f5767a; --rust-soft:#3d1e21;
+    --shadow: 0 1px 2px rgba(0,0,0,.4), 0 16px 36px -14px rgba(0,0,0,.6);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper); color:var(--ink);
+    font-family:var(--font-body); font-size:14.5px; line-height:1.5;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3{font-family:var(--font-display); font-weight:600; text-wrap:balance; margin:0;}
+  .num{font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
+  button{font:inherit; color:inherit;}
+  input,select,textarea{font:inherit; color:inherit;}
+  ::selection{background:var(--accent-soft);}
+  a{color:inherit;}
+
+  .app{max-width:1180px; margin:0 auto; padding:20px 20px 64px;}
+
+  /* ---- header ---- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding:4px 0 22px; margin-bottom:22px; border-bottom:1px solid var(--line);
+  }
+  .brand{display:flex; align-items:center; gap:12px;}
+  .brand .mark{
+    font-family:var(--font-display); font-weight:800; font-size:15px; letter-spacing:.01em;
+    color:var(--accent-ink); background:var(--accent); border-radius:11px; padding:9px 11px;
+    box-shadow:0 6px 16px -6px rgba(91,91,214,.5);
+  }
+  .brand h1{font-size:21px; font-weight:800; letter-spacing:-.01em;}
+  .brand .sub{color:var(--muted); font-size:12.5px;}
+  .topbar-right{display:flex; align-items:center; gap:10px;}
+  .today{font-size:12.5px; color:var(--muted); text-align:right; line-height:1.35;}
+  .today b{color:var(--ink); font-weight:600;}
+  .theme-toggle{
+    border:1px solid var(--line); background:var(--surface); border-radius:10px;
+    width:32px; height:32px; display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+  }
+  .theme-toggle:hover{background:var(--surface-2);}
+
+  /* ---- tabs ---- */
+  .tabs{display:flex; gap:4px; margin-bottom:20px; border-bottom:1px solid var(--line); flex-wrap:wrap;}
+  .tab{
+    appearance:none; border:none; background:none; cursor:pointer;
+    padding:9px 14px; font-weight:600; font-size:13.5px; color:var(--muted);
+    border-bottom:2px solid transparent; margin-bottom:-1px;
+    display:flex; align-items:center; gap:7px;
+  }
+  .tab:hover{color:var(--ink);}
+  .tab.active{color:var(--ink); border-bottom-color:var(--accent);}
+  .tab .badge{
+    background:var(--rust); color:#fff; font-size:10.5px; font-weight:700;
+    border-radius:99px; padding:1px 6px; font-family:var(--font-mono);
+  }
+
+  .panel{display:none;}
+  .panel.active{display:block; animation:fade .18s ease;}
+  @media (prefers-reduced-motion: reduce){.panel.active{animation:none;}}
+  @keyframes fade{from{opacity:0; transform:translateY(3px);} to{opacity:1; transform:none;}}
+
+  /* ---- stat tiles ---- */
+  .stat-row{display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:12px; margin-bottom:22px;}
+  .stat{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px;
+    padding:14px 16px; box-shadow:var(--shadow);
+  }
+  .stat .label{font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); font-weight:600;}
+  .stat .value{font-family:var(--font-mono); font-size:22px; font-weight:600; margin-top:6px; font-variant-numeric:tabular-nums;}
+  .stat .value.sage{color:var(--sage);} .stat .value.rust{color:var(--rust);} .stat .value.amber{color:var(--amber);}
+  .stat .foot{font-size:11.5px; color:var(--muted); margin-top:3px;}
+
+  section.block{margin-bottom:26px;}
+  .block-head{display:flex; align-items:baseline; justify-content:space-between; gap:12px; margin-bottom:12px; flex-wrap:wrap;}
+  .block-head h2{font-size:18px;}
+  .block-head .hint{font-size:12px; color:var(--muted);}
+
+  /* ---- buttons ---- */
+  .btn{
+    display:inline-flex; align-items:center; gap:6px; border-radius:10px; border:1px solid var(--line);
+    background:var(--surface); padding:8px 13px; font-weight:600; font-size:13px; cursor:pointer;
+  }
+  .btn:hover{background:var(--surface-2);}
+  .btn:focus-visible, .tab:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible{
+    outline:2px solid var(--accent); outline-offset:2px;
+  }
+  .btn-primary{background:var(--ink); border-color:var(--ink); color:var(--paper);}
+  .btn-primary:hover{background:var(--ink-soft); border-color:var(--ink-soft);}
+  .btn-ghost{border-color:transparent; background:none;}
+  .btn-ghost:hover{background:var(--surface-2);}
+  .btn-danger{color:var(--rust); border-color:var(--rust-soft);}
+  .btn-danger:hover{background:var(--rust-soft);}
+  .btn-sm{padding:5px 10px; font-size:12px; border-radius:9px;}
+  .btn[disabled]{opacity:.45; cursor:not-allowed;}
+
+  /* ---- pill / chip ---- */
+  .pill{
+    display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:700;
+    padding:3px 9px; border-radius:99px; white-space:nowrap;
+  }
+  .pill-sage{background:var(--sage-soft); color:var(--sage);}
+  .pill-amber{background:var(--amber-soft); color:var(--amber);}
+  .pill-rust{background:var(--rust-soft); color:var(--rust);}
+  .pill-muted{background:var(--surface-2); color:var(--muted);}
+  .dot{width:6px; height:6px; border-radius:99px; background:currentColor;}
+
+  /* ---- rooms grid ---- */
+  .room-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:12px;}
+  .room-card{
+    background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:14px;
+    box-shadow:var(--shadow); position:relative; cursor:pointer;
+  }
+  .room-card:hover{border-color:var(--accent);}
+  .room-card .num{font-family:var(--font-display); font-size:19px; font-weight:600;}
+  .room-card .type{font-size:12px; color:var(--muted); margin-top:2px;}
+  .room-card .rent{font-family:var(--font-mono); font-size:14px; margin-top:10px; font-weight:600;}
+  .room-card .tenant{font-size:12.5px; margin-top:6px; color:var(--ink-soft);}
+  .room-card .status{position:absolute; top:12px; right:12px;}
+
+  /* ---- table ---- */
+  .table-wrap{overflow-x:auto; border:1px solid var(--line); border-radius:16px; background:var(--surface); box-shadow:var(--shadow);}
+  table{width:100%; border-collapse:collapse; min-width:560px;}
+  th,td{padding:10px 14px; text-align:left; border-bottom:1px solid var(--line-soft); font-size:13.5px;}
+  th{font-size:11px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); font-weight:700; background:var(--surface-2);}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:var(--surface-2);}
+  td.num, th.num{font-family:var(--font-mono); font-variant-numeric:tabular-nums; text-align:right;}
+
+  .empty{
+    border:1.5px dashed var(--line); border-radius:16px; padding:34px 20px; text-align:center; color:var(--muted);
+  }
+  .empty b{color:var(--ink); display:block; font-family:var(--font-display); font-size:16px; margin-bottom:4px; font-weight:600;}
+
+  /* ---- due list ---- */
+  .due-list{display:flex; flex-direction:column; gap:8px;}
+  .due-row{
+    display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line);
+    border-left:4px solid var(--line); border-radius:10px; padding:11px 14px; box-shadow:var(--shadow);
+  }
+  .due-row.rust{border-left-color:var(--rust);}
+  .due-row.amber{border-left-color:var(--amber);}
+  .due-row .who{flex:1; min-width:0;}
+  .due-row .who .name{font-weight:700;}
+  .due-row .who .meta{font-size:12px; color:var(--muted);}
+  .due-row .status-text{font-size:12.5px; font-weight:700; text-align:right; margin-right:4px;}
+  .due-row.rust .status-text{color:var(--rust);}
+  .due-row.amber .status-text{color:var(--amber);}
+
+  /* ---- month switcher ---- */
+  .month-switch{display:flex; align-items:center; gap:8px;}
+  .month-switch button{
+    width:28px; height:28px; border-radius:9px; border:1px solid var(--line); background:var(--surface); cursor:pointer;
+  }
+  .month-switch button:hover{background:var(--surface-2);}
+  .month-switch .label{font-family:var(--font-mono); font-weight:600; min-width:120px; text-align:center;}
+
+  /* ---- forms / modal ---- */
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(16,20,18,.5); backdrop-filter:blur(1px);
+    display:flex; align-items:center; justify-content:center; padding:20px; z-index:50;
+  }
+  .modal{
+    background:var(--surface); border-radius:18px; padding:22px; width:100%; max-width:420px;
+    box-shadow:0 20px 60px -12px rgba(0,0,0,.4); max-height:88vh; overflow-y:auto;
+  }
+  .modal h3{font-size:17px; margin-bottom:16px;}
+  .field{display:flex; flex-direction:column; gap:5px; margin-bottom:13px;}
+  .field label{font-size:12px; font-weight:700; color:var(--ink-soft);}
+  .field input, .field select, .field textarea{
+    border:1px solid var(--line); border-radius:10px; padding:8px 10px; background:var(--paper); color:var(--ink);
+    font-size:13.5px;
+  }
+  .field textarea{resize:vertical; min-height:56px;}
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
+  .modal-actions{display:flex; justify-content:flex-end; gap:8px; margin-top:18px;}
+
+  /* ---- toast ---- */
+  .toast{
+    position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
+    background:var(--ink); color:var(--paper); padding:10px 18px; border-radius:99px;
+    font-size:13px; font-weight:600; box-shadow:0 10px 30px -8px rgba(0,0,0,.4); z-index:60;
+    opacity:0; pointer-events:none; transition:opacity .2s ease, transform .2s ease;
+  }
+  .toast.show{opacity:1; transform:translate(-50%,-4px);}
+
+  /* ---- chart ---- */
+  .chart-card{background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:18px; box-shadow:var(--shadow);}
+  .chart-legend{display:flex; gap:16px; font-size:12px; color:var(--muted); margin-top:10px; flex-wrap:wrap;}
+  .chart-legend span{display:inline-flex; align-items:center; gap:6px;}
+  .chart-legend i{width:10px; height:10px; border-radius:2px; display:inline-block;}
+  #bar-tooltip{
+    position:absolute; background:var(--ink); color:var(--paper); font-size:11.5px; padding:6px 9px;
+    border-radius:9px; pointer-events:none; opacity:0; transform:translate(-50%,-100%); white-space:nowrap;
+    font-family:var(--font-mono); z-index:5; transition:opacity .1s;
+  }
+
+  .grid-2{display:grid; grid-template-columns:1.3fr 1fr; gap:16px; align-items:start;}
+  @media (max-width:760px){ .grid-2{grid-template-columns:1fr;} .field-row{grid-template-columns:1fr;} }
+
+  .sample-note{
+    font-size:12px; color:var(--amber); background:var(--amber-soft); border-radius:10px;
+    padding:8px 12px; margin-bottom:16px; display:none;
+  }
+  .sample-note.show{display:block;}
+</style>
+
+<div class="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark">BK</span>
+      <div>
+        <h1 id="propName">Buku Kos</h1>
+        <div class="sub" id="propSub">Catatan kamar, sewa, dan kas kos</div>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="today">Hari ini<br><b id="todayLabel">—</b></div>
+      <button class="theme-toggle" id="themeToggle" title="Ganti tampilan terang/gelap" aria-label="Ganti tema">
+        <svg id="themeIcon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.4 6.4-.7-.7M6.3 6.3l-.7-.7m12.8 0-.7.7M6.3 17.7l-.7.7M12 7a5 5 0 100 10 5 5 0 000-10z"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="sample-note" id="sampleNote">
+    Ini contoh data biar kebayang cara pakainya — hapus/ganti lewat menu Kamar &amp; Penghuni kalau udah siap isi data kos kamu sendiri.
+    <button class="btn btn-ghost btn-sm" id="dismissSample" style="margin-left:8px;">Ngerti, sembunyikan</button>
+  </div>
+
+  <nav class="tabs" role="tablist">
+    <button class="tab active" data-tab="ringkasan">Ringkasan</button>
+    <button class="tab" data-tab="kamar">Kamar &amp; Penghuni</button>
+    <button class="tab" data-tab="tagihan">Tagihan Bulan Ini</button>
+    <button class="tab" data-tab="pengeluaran">Pengeluaran</button>
+    <button class="tab" data-tab="laporan">Laporan</button>
+  </nav>
+
+  <!-- ===== RINGKASAN ===== -->
+  <div class="panel active" id="panel-ringkasan">
+    <div class="stat-row" id="statRow"></div>
+
+    <section class="block">
+      <div class="block-head">
+        <h2>Pengingat Jatuh Tempo</h2>
+        <span class="hint" id="dueHint"></span>
+      </div>
+      <div class="due-list" id="dueList"></div>
+    </section>
+  </div>
+
+  <!-- ===== KAMAR & PENGHUNI ===== -->
+  <div class="panel" id="panel-kamar">
+    <section class="block">
+      <div class="block-head">
+        <h2>Kamar</h2>
+        <button class="btn btn-primary btn-sm" id="btnAddRoom">+ Tambah Kamar</button>
+      </div>
+      <div class="room-grid" id="roomGrid"></div>
+    </section>
+
+    <section class="block">
+      <div class="block-head">
+        <h2>Penghuni</h2>
+        <button class="btn btn-primary btn-sm" id="btnAddTenant">+ Tambah Penghuni</button>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead><tr><th>Nama</th><th>Kamar</th><th>No. HP</th><th>Tgl Masuk</th><th>Jatuh Tempo</th><th class="num">Deposit</th><th>Status</th><th></th></tr></thead>
+          <tbody id="tenantTable"></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <!-- ===== TAGIHAN ===== -->
+  <div class="panel" id="panel-tagihan">
+    <div class="block-head">
+      <h2>Tagihan Bulan Ini</h2>
+      <div class="month-switch">
+        <button id="billPrev" aria-label="Bulan sebelumnya">‹</button>
+        <span class="label" id="billMonthLabel"></span>
+        <button id="billNext" aria-label="Bulan berikutnya">›</button>
+      </div>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Kamar</th><th>Penghuni</th><th class="num">Sewa</th><th>Status</th><th>Tgl Bayar</th><th></th></tr></thead>
+        <tbody id="billTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== PENGELUARAN ===== -->
+  <div class="panel" id="panel-pengeluaran">
+    <div class="block-head">
+      <h2>Pengeluaran</h2>
+      <button class="btn btn-primary btn-sm" id="btnAddExpense">+ Catat Pengeluaran</button>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tanggal</th><th>Kategori</th><th>Catatan</th><th class="num">Jumlah</th><th></th></tr></thead>
+        <tbody id="expenseTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ===== LAPORAN ===== -->
+  <div class="panel" id="panel-laporan">
+    <div class="grid-2">
+      <div class="chart-card" style="position:relative;">
+        <h2 style="font-size:15px;margin-bottom:2px;">Untung / Rugi 6 Bulan Terakhir</h2>
+        <div class="hint" style="color:var(--muted); font-size:12px; margin-bottom:10px;">Pendapatan sewa dikurangi pengeluaran, per bulan</div>
+        <svg id="netChart" viewBox="0 0 560 220" style="width:100%; height:auto; overflow:visible;"></svg>
+        <div id="bar-tooltip"></div>
+        <div class="chart-legend">
+          <span><i style="background:var(--sage)"></i>Untung</span>
+          <span><i style="background:var(--rust)"></i>Rugi</span>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table style="min-width:0;">
+          <thead><tr><th>Bulan</th><th class="num">Pendapatan</th><th class="num">Pengeluaran</th><th class="num">Untung</th></tr></thead>
+          <tbody id="reportTable"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="modalRoot"></div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---------------------------------------------------------------
+  // Konstanta & util
+  // ---------------------------------------------------------------
+  var EXPENSE_CATEGORIES = ['Listrik','Air (PDAM)','Wifi/Internet','Perbaikan','Kebersihan','Lain-lain'];
+  var MONTH_NAMES = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+  function fmtRupiah(n){
+    n = Math.round(Number(n)||0);
+    return 'Rp' + n.toLocaleString('id-ID');
+  }
+  function periodOf(dateStr){ return (dateStr||'').slice(0,7); }
+  function todayISO(){ return new Date().toISOString().slice(0,10); }
+  function currentPeriod(){ return todayISO().slice(0,7); }
+  function periodLabel(period){
+    var parts = period.split('-'); var y = parts[0], m = parseInt(parts[1],10)-1;
+    return MONTH_NAMES[m] + ' ' + y;
+  }
+  function shiftPeriod(period, delta){
+    var parts = period.split('-').map(Number);
+    var d = new Date(parts[0], parts[1]-1+delta, 1);
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  }
+  function daysInMonth(period){
+    var parts = period.split('-').map(Number);
+    return new Date(parts[0], parts[1], 0).getDate();
+  }
+  function uid(){ return Math.random().toString(36).slice(2,10); }
+  function escapeHtml(s){ return String(s==null?'':s).replace(/[&<>"']/g, function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];}); }
+
+  function showToast(msg){
+    var t = document.getElementById('toast');
+    t.textContent = msg; t.classList.add('show');
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(function(){ t.classList.remove('show'); }, 2200);
+  }
+
+  // ---------------------------------------------------------------
+  // State (disinkron live dari db, atau localStorage kalau db gak tersedia)
+  // ---------------------------------------------------------------
+  var state = { rooms: [], tenants: [], payments: [], expenses: [] };
+  var billPeriod = currentPeriod();
+  var db = null;
+  var LS_KEY = 'buku-kos-fallback-v1';
+
+  // Contoh data buat kunjungan PERTAMA kali doang (localStorage-nya belum
+  // pernah diisi sama sekali) — tanggal bayar/pengeluaran dihitung RELATIF
+  // ke hari ini (bukan tanggal tetap), biar tetap masuk akal kelihatan
+  // "bulan ini" kapanpun halaman ini pertama kali dibuka.
+  function sampleData(){
+    return {
+      rooms: [
+        {id:'r1', number:'1', type:'Standar, kipas', rent:750000},
+        {id:'r2', number:'2', type:'AC + KM Dalam', rent:1100000},
+        {id:'r3', number:'3', type:'AC + KM Dalam', rent:1100000},
+        {id:'r4', number:'4', type:'Standar, kipas', rent:750000},
+        {id:'r5', number:'5', type:'Deluxe, AC + KM Dalam', rent:1350000},
+        {id:'r6', number:'6', type:'Standar, kipas', rent:750000}
+      ],
+      tenants: [
+        {id:'t1', name:'Rina Wulandari', phone:'0812-1111-2222', roomId:'r1', moveInDate:'2025-11-01', dueDay:5, deposit:750000, active:true},
+        {id:'t2', name:'Budi Santoso', phone:'0813-2222-3333', roomId:'r2', moveInDate:'2025-06-15', dueDay:15, deposit:1100000, active:true},
+        {id:'t3', name:'Siti Aminah', phone:'0821-3333-4444', roomId:'r3', moveInDate:'2026-01-10', dueDay:10, deposit:1100000, active:true},
+        {id:'t4', name:'Agus Prasetyo', phone:'0857-4444-5555', roomId:'r5', moveInDate:'2025-09-01', dueDay:1, deposit:1350000, active:true}
+      ],
+      payments: [
+        {id:'p1', tenantId:'t2', roomId:'r2', period: currentPeriod(), amount:1100000, paidDate: todayISO(), method:'transfer', note:''}
+      ],
+      expenses: [
+        {id:'e1', date: todayISO(), category:'Listrik', amount:450000, note:'Token 6 kamar'},
+        {id:'e2', date: todayISO(), category:'Air (PDAM)', amount:180000, note:''}
+      ]
+    };
+  }
+
+  function useLocalStorage(){
+    var raw = null;
+    try{ raw = localStorage.getItem(LS_KEY); }catch(e){}
+    if(raw){
+      try{ state = JSON.parse(raw); }catch(e){}
+      try{ window._isSample = localStorage.getItem(LS_KEY+'-sample') === '1'; }catch(e){}
+    } else {
+      // Belum pernah dibuka sama sekali di browser ini — isiin contoh biar
+      // gak nongol kosong melompong pas pertama kali dibuka.
+      state = sampleData();
+      window._isSample = true;
+      try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
+      try{ localStorage.setItem(LS_KEY+'-sample','1'); }catch(e){}
+    }
+    renderAll();
+  }
+  function persistLocal(){
+    try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
+    renderAll();
+  }
+
+  // ---------------------------------------------------------------
+  // Lapisan data — collection() lewat db kalau ada, fallback array lokal
+  // ---------------------------------------------------------------
+  function watchCollection(name){
+    if(!db){ return; }
+    db.collection(name).onSnapshot(function(snap){
+      state[name] = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      renderAll();
+    }, function(err){
+      console.error('onSnapshot ' + name + ' error', err);
+    });
+  }
+
+  function addDoc(name, data){
+    if(db){ return db.collection(name).add(data); }
+    var id = uid();
+    state[name].push(Object.assign({id:id}, data));
+    persistLocal();
+    return Promise.resolve({id:id});
+  }
+  function setDoc(name, id, data){
+    if(db){ return db.doc(name+'/'+id).set(data); }
+    var idx = state[name].findIndex(function(x){return x.id===id;});
+    if(idx>=0) state[name][idx] = Object.assign({id:id}, data);
+    persistLocal();
+    return Promise.resolve();
+  }
+  function updateDoc(name, id, patch){
+    if(db){ return db.doc(name+'/'+id).update(patch); }
+    var idx = state[name].findIndex(function(x){return x.id===id;});
+    if(idx>=0) Object.assign(state[name][idx], patch);
+    persistLocal();
+    return Promise.resolve();
+  }
+  function deleteDoc(name, id){
+    if(db){ return db.doc(name+'/'+id).delete(); }
+    state[name] = state[name].filter(function(x){return x.id!==id;});
+    persistLocal();
+    return Promise.resolve();
+  }
+
+  // ---------------------------------------------------------------
+  // Modal helper
+  // ---------------------------------------------------------------
+  function openModal(html, onMount){
+    var root = document.getElementById('modalRoot');
+    root.innerHTML = '<div class="modal-backdrop" id="mb"><div class="modal">'+html+'</div></div>';
+    var mb = document.getElementById('mb');
+    mb.addEventListener('click', function(e){ if(e.target===mb) closeModal(); });
+    document.addEventListener('keydown', escClose);
+    if(onMount) onMount(root);
+  }
+  function escClose(e){ if(e.key==='Escape') closeModal(); }
+  function closeModal(){
+    document.getElementById('modalRoot').innerHTML='';
+    document.removeEventListener('keydown', escClose);
+  }
+
+  // ---------------------------------------------------------------
+  // Tabs
+  // ---------------------------------------------------------------
+  document.querySelectorAll('.tab').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      document.querySelectorAll('.tab').forEach(function(b){b.classList.remove('active');});
+      document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+      btn.classList.add('active');
+      document.getElementById('panel-'+btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ---------------------------------------------------------------
+  // Theme toggle (localStorage per-viewer preference)
+  // ---------------------------------------------------------------
+  (function initTheme(){
+    var saved = null;
+    try{ saved = localStorage.getItem('buku-kos-theme'); }catch(e){}
+    if(saved) document.documentElement.setAttribute('data-theme', saved);
+    updateThemeIcon();
+    document.getElementById('themeToggle').addEventListener('click', function(){
+      var cur = document.documentElement.getAttribute('data-theme');
+      var sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      var effectiveDark = cur ? cur==='dark' : sysDark;
+      var next = effectiveDark ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try{ localStorage.setItem('buku-kos-theme', next); }catch(e){}
+      updateThemeIcon();
+      renderChart();
+    });
+  })();
+  function updateThemeIcon(){
+    var cur = document.documentElement.getAttribute('data-theme');
+    var sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    var dark = cur ? cur==='dark' : sysDark;
+    document.getElementById('themeIcon').innerHTML = dark
+      ? '<path d="M21 12.5A8.5 8.5 0 1111.5 3 7 7 0 0021 12.5z" fill="currentColor" stroke="none"/>'
+      : '<path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.4 6.4-.7-.7M6.3 6.3l-.7-.7m12.8 0-.7.7M6.3 17.7l-.7.7M12 7a5 5 0 100 10 5 5 0 000-10z"/>';
+  }
+
+  // ---------------------------------------------------------------
+  // Today label
+  // ---------------------------------------------------------------
+  (function(){
+    var d = new Date();
+    var days = ['Minggu','Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'];
+    document.getElementById('todayLabel').textContent = days[d.getDay()] + ', ' + d.getDate() + ' ' + MONTH_NAMES[d.getMonth()] + ' ' + d.getFullYear();
+  })();
+
+  // ---------------------------------------------------------------
+  // Derived helpers
+  // ---------------------------------------------------------------
+  function activeTenants(){ return state.tenants.filter(function(t){return t.active!==false;}); }
+  function tenantForRoom(roomId){ return activeTenants().find(function(t){return t.roomId===roomId;}); }
+  function roomById(id){ return state.rooms.find(function(r){return r.id===id;}); }
+  function paymentFor(tenantId, period){ return state.payments.find(function(p){return p.tenantId===tenantId && p.period===period;}); }
+
+  function dueStatus(tenant, todayDate){
+    // returns null (lunas / gak relevan) atau {level:'rust'|'amber', text}
+    var dueDay = Math.min(tenant.dueDay||1, daysInMonth(currentPeriod()));
+    var d = todayDate.getDate();
+    var diff = dueDay - d;
+    if(diff < 0) return {level:'rust', text:'Telat ' + (-diff) + ' hari'};
+    if(diff <= 3) return {level:'amber', text: diff===0 ? 'Jatuh tempo hari ini' : 'H-'+diff+' (tgl '+dueDay+')'};
+    return {level:'muted', text:'Jatuh tempo tgl '+dueDay};
+  }
+
+  // ---------------------------------------------------------------
+  // RENDER: stat tiles + due list (Ringkasan)
+  // ---------------------------------------------------------------
+  function renderRingkasan(){
+    var period = currentPeriod();
+    var rooms = state.rooms;
+    var tenants = activeTenants();
+    var occupiedRoomIds = {};
+    tenants.forEach(function(t){ occupiedRoomIds[t.roomId]=true; });
+    var terisi = Object.keys(occupiedRoomIds).filter(function(id){ return rooms.some(function(r){return r.id===id;}); }).length;
+    var kosong = rooms.length - terisi;
+
+    var pendapatan = state.payments.filter(function(p){return p.period===period;}).reduce(function(s,p){return s+Number(p.amount||0);},0);
+    var pengeluaran = state.expenses.filter(function(e){return periodOf(e.date)===period;}).reduce(function(s,e){return s+Number(e.amount||0);},0);
+    var belumBayarTenants = tenants.filter(function(t){ return !paymentFor(t.id, period); });
+    var potensiBelum = belumBayarTenants.reduce(function(s,t){ var r=roomById(t.roomId); return s + (r? Number(r.rent||0):0); },0);
+
+    var tiles = [
+      {label:'Total Kamar', value: rooms.length, foot: terisi+' terisi · '+kosong+' kosong'},
+      {label:'Pendapatan Bulan Ini', value: fmtRupiah(pendapatan), cls:'sage', foot: periodLabel(period)},
+      {label:'Belum Bayar', value: belumBayarTenants.length + ' penghuni', cls: belumBayarTenants.length? 'rust':'sage', foot: fmtRupiah(potensiBelum)+' berpotensi masuk'},
+      {label:'Pengeluaran Bulan Ini', value: fmtRupiah(pengeluaran), cls:'amber', foot:'Listrik, air, dll'},
+      {label:'Untung Bersih', value: fmtRupiah(pendapatan-pengeluaran), cls: (pendapatan-pengeluaran)>=0?'sage':'rust', foot:'Pendapatan − Pengeluaran'}
+    ];
+    document.getElementById('statRow').innerHTML = tiles.map(function(t){
+      return '<div class="stat"><div class="label">'+t.label+'</div><div class="value '+(t.cls||'')+'">'+t.value+'</div><div class="foot">'+t.foot+'</div></div>';
+    }).join('');
+
+    // due list: semua penghuni aktif yg BELUM bayar periode ini, urut paling mendesak
+    var today = new Date();
+    var rows = belumBayarTenants.map(function(t){
+      var st = dueStatus(t, today);
+      var room = roomById(t.roomId);
+      return {t:t, room:room, st:st};
+    }).sort(function(a,b){
+      var order = {rust:0, amber:1, muted:2};
+      return order[a.st.level]-order[b.st.level];
+    });
+
+    document.getElementById('dueHint').textContent = rows.length ? (rows.length + ' penghuni belum bayar bulan ini') : 'Semua penghuni sudah bayar bulan ini 🎉';
+    document.getElementById('dueList').innerHTML = rows.length ? rows.map(function(r){
+      return '<div class="due-row '+(r.st.level==='muted'?'':r.st.level)+'">'+
+        '<div class="who"><div class="name">'+escapeHtml(r.t.name)+'</div><div class="meta">Kamar '+escapeHtml(r.room?r.room.number:'—')+' · '+fmtRupiah(r.room?r.room.rent:0)+'/bulan</div></div>'+
+        '<div class="status-text">'+r.st.text+'</div>'+
+        '<button class="btn btn-sm btn-primary" data-mark-paid="'+r.t.id+'">Tandai Lunas</button>'+
+      '</div>';
+    }).join('') : '<div class="empty">Gak ada tunggakan. Mantap!</div>';
+  }
+
+  // ---------------------------------------------------------------
+  // RENDER: kamar & penghuni
+  // ---------------------------------------------------------------
+  function renderKamar(){
+    var grid = document.getElementById('roomGrid');
+    if(!state.rooms.length){
+      grid.innerHTML = '<div class="empty" style="grid-column:1/-1;"><b>Belum ada kamar</b>Klik "Tambah Kamar" buat mulai catat kos kamu.</div>';
+    } else {
+      grid.innerHTML = state.rooms.slice().sort(function(a,b){return (a.number||'').localeCompare(b.number||'', undefined, {numeric:true});}).map(function(r){
+        var t = tenantForRoom(r.id);
+        return '<div class="room-card" data-edit-room="'+r.id+'">'+
+          '<span class="status pill '+(t?'pill-sage':'pill-amber')+'">'+(t?'Terisi':'Kosong')+'</span>'+
+          '<div class="num">Kamar '+escapeHtml(r.number)+'</div>'+
+          '<div class="type">'+escapeHtml(r.type||'—')+'</div>'+
+          '<div class="rent">'+fmtRupiah(r.rent)+'<span style="font-family:var(--font-body); color:var(--muted); font-weight:400;">/bln</span></div>'+
+          (t ? '<div class="tenant">👤 '+escapeHtml(t.name)+'</div>' : '')+
+        '</div>';
+      }).join('');
+    }
+
+    var tbody = document.getElementById('tenantTable');
+    if(!state.tenants.length){
+      tbody.innerHTML = '<tr><td colspan="8"><div class="empty">Belum ada penghuni tercatat.</div></td></tr>';
+    } else {
+      tbody.innerHTML = state.tenants.slice().sort(function(a,b){ return (b.active?1:0)-(a.active?1:0); }).map(function(t){
+        var r = roomById(t.roomId);
+        return '<tr>'+
+          '<td><b>'+escapeHtml(t.name)+'</b></td>'+
+          '<td>'+(r?escapeHtml(r.number):'—')+'</td>'+
+          '<td>'+escapeHtml(t.phone||'—')+'</td>'+
+          '<td>'+(t.moveInDate||'—')+'</td>'+
+          '<td>tgl '+ (t.dueDay||'—') +'</td>'+
+          '<td class="num">'+fmtRupiah(t.deposit||0)+'</td>'+
+          '<td>'+(t.active===false ? '<span class="pill pill-muted">Pindah keluar</span>' : '<span class="pill pill-sage">Aktif</span>')+'</td>'+
+          '<td><button class="btn btn-sm btn-ghost" data-edit-tenant="'+t.id+'">Ubah</button></td>'+
+        '</tr>';
+      }).join('');
+    }
+  }
+
+  // ---------------------------------------------------------------
+  // RENDER: tagihan bulan (dgn month switcher)
+  // ---------------------------------------------------------------
+  function renderTagihan(){
+    document.getElementById('billMonthLabel').textContent = periodLabel(billPeriod);
+    var tbody = document.getElementById('billTable');
+    var tenants = state.tenants.filter(function(t){
+      // tampilkan penghuni aktif SEKARANG, atau yg aktif waktu itu (heuristik: moveInDate <= akhir periode)
+      return t.active!==false || (t.moveInDate && t.moveInDate.slice(0,7) <= billPeriod);
+    });
+    if(!tenants.length){
+      tbody.innerHTML = '<tr><td colspan="6"><div class="empty">Belum ada penghuni buat bulan ini.</div></td></tr>';
+      return;
+    }
+    var today = new Date();
+    tbody.innerHTML = tenants.map(function(t){
+      var r = roomById(t.roomId);
+      var pay = paymentFor(t.id, billPeriod);
+      var statusHtml, actionHtml;
+      if(pay){
+        statusHtml = '<span class="pill pill-sage">Lunas</span>';
+        actionHtml = '<button class="btn btn-sm btn-ghost" data-unpay="'+pay.id+'">Batalkan</button>';
+      } else if(billPeriod === currentPeriod()){
+        var st = dueStatus(t, today);
+        statusHtml = '<span class="pill '+(st.level==='rust'?'pill-rust':st.level==='amber'?'pill-amber':'pill-muted')+'">'+ (st.level==='rust'?'Telat':'Belum Bayar') +'</span>';
+        actionHtml = '<button class="btn btn-sm btn-primary" data-mark-paid="'+t.id+'" data-period="'+billPeriod+'">Tandai Lunas</button>';
+      } else {
+        statusHtml = '<span class="pill pill-rust">Belum Bayar</span>';
+        actionHtml = '<button class="btn btn-sm btn-primary" data-mark-paid="'+t.id+'" data-period="'+billPeriod+'">Tandai Lunas</button>';
+      }
+      return '<tr>'+
+        '<td>'+(r?escapeHtml(r.number):'—')+'</td>'+
+        '<td>'+escapeHtml(t.name)+'</td>'+
+        '<td class="num">'+fmtRupiah(r?r.rent:0)+'</td>'+
+        '<td>'+statusHtml+'</td>'+
+        '<td>'+(pay? pay.paidDate : '—')+'</td>'+
+        '<td>'+actionHtml+'</td>'+
+      '</tr>';
+    }).join('');
+  }
+
+  // ---------------------------------------------------------------
+  // RENDER: pengeluaran
+  // ---------------------------------------------------------------
+  function renderPengeluaran(){
+    var tbody = document.getElementById('expenseTable');
+    var rows = state.expenses.slice().sort(function(a,b){ return (b.date||'').localeCompare(a.date||''); });
+    if(!rows.length){
+      tbody.innerHTML = '<tr><td colspan="5"><div class="empty">Belum ada pengeluaran tercatat.</div></td></tr>';
+      return;
+    }
+    tbody.innerHTML = rows.map(function(e){
+      return '<tr>'+
+        '<td>'+(e.date||'—')+'</td>'+
+        '<td><span class="pill pill-muted">'+escapeHtml(e.category)+'</span></td>'+
+        '<td>'+escapeHtml(e.note||'—')+'</td>'+
+        '<td class="num">'+fmtRupiah(e.amount)+'</td>'+
+        '<td><button class="btn btn-sm btn-danger" data-del-expense="'+e.id+'">Hapus</button></td>'+
+      '</tr>';
+    }).join('');
+  }
+
+  // ---------------------------------------------------------------
+  // RENDER: laporan (tabel + chart)
+  // ---------------------------------------------------------------
+  function last6Periods(){
+    var arr = []; var p = currentPeriod();
+    for(var i=5;i>=0;i--) arr.push(shiftPeriod(p, -i));
+    return arr;
+  }
+  function monthTotals(period){
+    var income = state.payments.filter(function(p){return p.period===period;}).reduce(function(s,p){return s+Number(p.amount||0);},0);
+    var expense = state.expenses.filter(function(e){return periodOf(e.date)===period;}).reduce(function(s,e){return s+Number(e.amount||0);},0);
+    return {income:income, expense:expense, net: income-expense};
+  }
+  function renderLaporan(){
+    var periods = last6Periods();
+    var data = periods.map(function(p){ return Object.assign({period:p}, monthTotals(p)); });
+    document.getElementById('reportTable').innerHTML = data.map(function(d){
+      return '<tr><td>'+periodLabel(d.period)+'</td><td class="num">'+fmtRupiah(d.income)+'</td><td class="num">'+fmtRupiah(d.expense)+'</td>'+
+        '<td class="num" style="color:'+(d.net>=0?'var(--sage)':'var(--rust)')+'; font-weight:600;">'+fmtRupiah(d.net)+'</td></tr>';
+    }).join('');
+    window._reportData = data;
+    renderChart();
+  }
+
+  function renderChart(){
+    var data = window._reportData; if(!data) return;
+    var svg = document.getElementById('netChart');
+    var W=560,H=220, padL=64, padR=14, padT=14, padB=28;
+    var plotW = W-padL-padR, plotH = H-padT-padB;
+    var maxAbs = Math.max(10000, data.reduce(function(m,d){return Math.max(m, Math.abs(d.net));},0));
+    // gridlines rounder ke atas
+    // Bug nyata ketemu pas preview: versi lama cuma dobelin niceMax SEKALI,
+    // jadi kalau maxAbs > 2x basis 10-nya, bar-nya nembus ke luar viewBox
+    // (kepotong di atas). Loop terus dobelin sampai beneran >= maxAbs.
+    var niceMax = Math.pow(10, Math.floor(Math.log10(maxAbs)));
+    while(niceMax < maxAbs) niceMax *= 2;
+    var zeroY = padT + plotH/2;
+    var scale = (plotH/2 - 6) / niceMax;
+    var bw = plotW/data.length;
+    var barW = Math.min(38, bw*0.5);
+
+    var css = getComputedStyle(document.documentElement);
+    var cSage = css.getPropertyValue('--sage').trim();
+    var cRust = css.getPropertyValue('--rust').trim();
+    var cLine = css.getPropertyValue('--line').trim();
+    var cMuted = css.getPropertyValue('--muted').trim();
+
+    var svgParts = [];
+    // gridlines: 0 dan +-max
+    [-niceMax, 0, niceMax].forEach(function(v){
+      var y = zeroY - v*scale;
+      svgParts.push('<line x1="'+padL+'" y1="'+y+'" x2="'+(W-padR)+'" y2="'+y+'" stroke="'+cLine+'" stroke-width="1" />');
+      svgParts.push('<text x="'+(padL-8)+'" y="'+(y+4)+'" text-anchor="end" font-size="10" font-family="IBM Plex Mono, monospace" fill="'+cMuted+'">'+ (v===0? '0' : (v>0?'+':'')+Math.round(v/1000)+'rb') +'</text>');
+    });
+
+    data.forEach(function(d, i){
+      var cx = padL + bw*i + bw/2;
+      var h = Math.abs(d.net)*scale;
+      var y = d.net>=0 ? zeroY-h : zeroY;
+      var color = d.net>=0 ? cSage : cRust;
+      svgParts.push('<rect class="bar" data-i="'+i+'" x="'+(cx-barW/2)+'" y="'+y+'" width="'+barW+'" height="'+Math.max(h,2)+'" rx="4" fill="'+color+'" />');
+      var mm = periodLabel(d.period).split(' ')[0].slice(0,3);
+      svgParts.push('<text x="'+cx+'" y="'+(H-8)+'" text-anchor="middle" font-size="10.5" font-family="Karla, sans-serif" fill="'+cMuted+'">'+mm+'</text>');
+    });
+
+    svg.innerHTML = svgParts.join('');
+
+    var tip = document.getElementById('bar-tooltip');
+    svg.querySelectorAll('.bar').forEach(function(bar){
+      bar.style.cursor='pointer';
+      bar.addEventListener('mousemove', function(e){
+        var d = data[+bar.dataset.i];
+        var rect = svg.getBoundingClientRect();
+        var scaleX = rect.width / W;
+        var bx = parseFloat(bar.getAttribute('x')) + parseFloat(bar.getAttribute('width'))/2;
+        var by = parseFloat(bar.getAttribute('y'));
+        tip.style.left = (bx*scaleX) + 'px';
+        tip.style.top = (by*(rect.height/H)) + 'px';
+        tip.innerHTML = '<b>'+periodLabel(d.period)+'</b><br>Pendapatan '+fmtRupiah(d.income)+'<br>Pengeluaran '+fmtRupiah(d.expense)+'<br>Untung '+fmtRupiah(d.net);
+        tip.style.opacity = 1;
+      });
+      bar.addEventListener('mouseleave', function(){ tip.style.opacity = 0; });
+    });
+  }
+
+  function renderAll(){
+    renderRingkasan();
+    renderKamar();
+    renderTagihan();
+    renderPengeluaran();
+    renderLaporan();
+    var hasAny = state.rooms.length || state.tenants.length || state.payments.length || state.expenses.length;
+    document.getElementById('sampleNote').classList.toggle('show', !!(window._isSample && hasAny));
+  }
+
+  // ---------------------------------------------------------------
+  // Month switcher (tagihan)
+  // ---------------------------------------------------------------
+  document.getElementById('billPrev').addEventListener('click', function(){ billPeriod = shiftPeriod(billPeriod,-1); renderTagihan(); });
+  document.getElementById('billNext').addEventListener('click', function(){ billPeriod = shiftPeriod(billPeriod,1); renderTagihan(); });
+
+  // ---------------------------------------------------------------
+  // Forms: Tambah/Ubah Kamar
+  // ---------------------------------------------------------------
+  function roomForm(existing){
+    var isEdit = !!existing;
+    openModal(
+      '<h3>'+(isEdit?'Ubah Kamar':'Tambah Kamar')+'</h3>'+
+      '<form id="roomForm">'+
+        '<div class="field"><label>Nomor Kamar</label><input required name="number" value="'+(existing?escapeHtml(existing.number):'')+'" placeholder="Contoh: 1, 2A"></div>'+
+        '<div class="field"><label>Tipe / Fasilitas</label><input name="type" value="'+(existing?escapeHtml(existing.type):'')+'" placeholder="Contoh: Standar, AC + KM Dalam"></div>'+
+        '<div class="field"><label>Harga Sewa / Bulan (Rp)</label><input required type="number" min="0" name="rent" value="'+(existing?existing.rent:'')+'"></div>'+
+        '<div class="modal-actions">'+
+          (isEdit? '<button type="button" class="btn btn-danger" id="delRoom">Hapus Kamar</button>' : '')+
+          '<button type="button" class="btn btn-ghost" id="cancelBtn">Batal</button>'+
+          '<button type="submit" class="btn btn-primary">Simpan</button>'+
+        '</div>'+
+      '</form>',
+      function(root){
+        root.querySelector('#cancelBtn').addEventListener('click', closeModal);
+        var del = root.querySelector('#delRoom');
+        if(del) del.addEventListener('click', function(){
+          if(tenantForRoom(existing.id)){ showToast('Gak bisa hapus — kamar masih ada penghuni aktif'); return; }
+          deleteDoc('rooms', existing.id); closeModal(); showToast('Kamar dihapus');
+        });
+        root.querySelector('#roomForm').addEventListener('submit', function(e){
+          e.preventDefault();
+          var f = e.target;
+          var data = { number: f.number.value.trim(), type: f.type.value.trim(), rent: Number(f.rent.value)||0 };
+          var p = isEdit ? updateDoc('rooms', existing.id, data) : addDoc('rooms', data);
+          p.then(function(){ closeModal(); showToast(isEdit?'Kamar diperbarui':'Kamar ditambahkan'); });
+        });
+      }
+    );
+  }
+  document.getElementById('btnAddRoom').addEventListener('click', function(){ roomForm(null); });
+  document.getElementById('roomGrid').addEventListener('click', function(e){
+    var el = e.target.closest('[data-edit-room]'); if(!el) return;
+    roomForm(roomById(el.dataset.editRoom));
+  });
+
+  // ---------------------------------------------------------------
+  // Forms: Tambah/Ubah Penghuni
+  // ---------------------------------------------------------------
+  function tenantForm(existing){
+    var isEdit = !!existing;
+    var roomOptions = state.rooms.map(function(r){
+      var takenBy = tenantForRoom(r.id);
+      var disabled = takenBy && (!existing || takenBy.id!==existing.id) ? ' disabled' : '';
+      var sel = existing && existing.roomId===r.id ? ' selected' : '';
+      return '<option value="'+r.id+'"'+sel+disabled+'>Kamar '+escapeHtml(r.number)+(takenBy?' (terisi)':'')+'</option>';
+    }).join('');
+    openModal(
+      '<h3>'+(isEdit?'Ubah Penghuni':'Tambah Penghuni')+'</h3>'+
+      '<form id="tenantForm">'+
+        '<div class="field"><label>Nama</label><input required name="name" value="'+(existing?escapeHtml(existing.name):'')+'"></div>'+
+        '<div class="field-row">'+
+          '<div class="field"><label>No. HP</label><input name="phone" value="'+(existing?escapeHtml(existing.phone||''):'')+'"></div>'+
+          '<div class="field"><label>Kamar</label><select name="roomId" required><option value="">— pilih —</option>'+roomOptions+'</select></div>'+
+        '</div>'+
+        '<div class="field-row">'+
+          '<div class="field"><label>Tanggal Masuk</label><input type="date" name="moveInDate" value="'+(existing?existing.moveInDate:todayISO())+'"></div>'+
+          '<div class="field"><label>Tanggal Jatuh Tempo (tiap bulan)</label><input type="number" min="1" max="31" name="dueDay" value="'+(existing?existing.dueDay:1)+'"></div>'+
+        '</div>'+
+        '<div class="field"><label>Deposit (Rp, opsional)</label><input type="number" min="0" name="deposit" value="'+(existing?existing.deposit||0:0)+'"></div>'+
+        (isEdit ? '<div class="field"><label><input type="checkbox" name="active" '+(existing.active===false?'':'checked')+' style="width:auto; margin-right:6px;">Masih tinggal di kos</label></div>' : '')+
+        '<div class="modal-actions">'+
+          '<button type="button" class="btn btn-ghost" id="cancelBtn">Batal</button>'+
+          '<button type="submit" class="btn btn-primary">Simpan</button>'+
+        '</div>'+
+      '</form>',
+      function(root){
+        root.querySelector('#cancelBtn').addEventListener('click', closeModal);
+        root.querySelector('#tenantForm').addEventListener('submit', function(e){
+          e.preventDefault();
+          var f = e.target;
+          var data = {
+            name: f.name.value.trim(), phone: f.phone.value.trim(), roomId: f.roomId.value,
+            moveInDate: f.moveInDate.value, dueDay: Math.max(1,Math.min(31,Number(f.dueDay.value)||1)),
+            deposit: Number(f.deposit.value)||0
+          };
+          if(isEdit) data.active = f.active ? f.active.checked : true;
+          else data.active = true;
+          var p = isEdit ? updateDoc('tenants', existing.id, data) : addDoc('tenants', data);
+          p.then(function(){ closeModal(); showToast(isEdit?'Data penghuni diperbarui':'Penghuni ditambahkan'); });
+        });
+      }
+    );
+  }
+  document.getElementById('btnAddTenant').addEventListener('click', function(){ tenantForm(null); });
+  document.getElementById('tenantTable').addEventListener('click', function(e){
+    var el = e.target.closest('[data-edit-tenant]'); if(!el) return;
+    tenantForm(state.tenants.find(function(t){return t.id===el.dataset.editTenant;}));
+  });
+
+  // ---------------------------------------------------------------
+  // Tandai Lunas / Batalkan pembayaran
+  // ---------------------------------------------------------------
+  function payForm(tenantId, period){
+    var t = state.tenants.find(function(x){return x.id===tenantId;});
+    var r = roomById(t.roomId);
+    openModal(
+      '<h3>Tandai Lunas — '+escapeHtml(t.name)+'</h3>'+
+      '<form id="payForm">'+
+        '<div class="field-row">'+
+          '<div class="field"><label>Jumlah (Rp)</label><input required type="number" min="0" name="amount" value="'+(r?r.rent:0)+'"></div>'+
+          '<div class="field"><label>Tanggal Bayar</label><input type="date" name="paidDate" value="'+todayISO()+'"></div>'+
+        '</div>'+
+        '<div class="field"><label>Metode</label><select name="method"><option value="cash">Tunai</option><option value="transfer">Transfer</option></select></div>'+
+        '<div class="field"><label>Catatan (opsional)</label><input name="note" placeholder="Contoh: bayar ke Bu Rina"></div>'+
+        '<div class="modal-actions">'+
+          '<button type="button" class="btn btn-ghost" id="cancelBtn">Batal</button>'+
+          '<button type="submit" class="btn btn-primary">Simpan</button>'+
+        '</div>'+
+      '</form>',
+      function(root){
+        root.querySelector('#cancelBtn').addEventListener('click', closeModal);
+        root.querySelector('#payForm').addEventListener('submit', function(e){
+          e.preventDefault();
+          var f = e.target;
+          addDoc('payments', {
+            tenantId: tenantId, roomId: t.roomId, period: period,
+            amount: Number(f.amount.value)||0, paidDate: f.paidDate.value,
+            method: f.method.value, note: f.note.value.trim()
+          }).then(function(){ closeModal(); showToast('Pembayaran dicatat'); });
+        });
+      }
+    );
+  }
+  document.addEventListener('click', function(e){
+    var mp = e.target.closest('[data-mark-paid]');
+    if(mp){ payForm(mp.dataset.markPaid, mp.dataset.period || currentPeriod()); return; }
+    var up = e.target.closest('[data-unpay]');
+    if(up){ deleteDoc('payments', up.dataset.unpay).then(function(){ showToast('Pembayaran dibatalkan'); }); return; }
+    var de = e.target.closest('[data-del-expense]');
+    if(de){ deleteDoc('expenses', de.dataset.delExpense).then(function(){ showToast('Pengeluaran dihapus'); }); return; }
+  });
+
+  // ---------------------------------------------------------------
+  // Form: Catat Pengeluaran
+  // ---------------------------------------------------------------
+  document.getElementById('btnAddExpense').addEventListener('click', function(){
+    openModal(
+      '<h3>Catat Pengeluaran</h3>'+
+      '<form id="expForm">'+
+        '<div class="field-row">'+
+          '<div class="field"><label>Tanggal</label><input type="date" name="date" value="'+todayISO()+'"></div>'+
+          '<div class="field"><label>Kategori</label><select name="category">'+EXPENSE_CATEGORIES.map(function(c){return '<option>'+c+'</option>';}).join('')+'</select></div>'+
+        '</div>'+
+        '<div class="field"><label>Jumlah (Rp)</label><input required type="number" min="0" name="amount"></div>'+
+        '<div class="field"><label>Catatan (opsional)</label><input name="note" placeholder="Contoh: token listrik kamar 1-6"></div>'+
+        '<div class="modal-actions">'+
+          '<button type="button" class="btn btn-ghost" id="cancelBtn">Batal</button>'+
+          '<button type="submit" class="btn btn-primary">Simpan</button>'+
+        '</div>'+
+      '</form>',
+      function(root){
+        root.querySelector('#cancelBtn').addEventListener('click', closeModal);
+        root.querySelector('#expForm').addEventListener('submit', function(e){
+          e.preventDefault();
+          var f = e.target;
+          addDoc('expenses', { date: f.date.value, category: f.category.value, amount: Number(f.amount.value)||0, note: f.note.value.trim() })
+            .then(function(){ closeModal(); showToast('Pengeluaran dicatat'); });
+        });
+      }
+    );
+  });
+
+  // ---------------------------------------------------------------
+  // Boot: coba db, fallback localStorage
+  // ---------------------------------------------------------------
+  renderAll();
+  document.getElementById('dismissSample').addEventListener('click', function(){
+    window._isSample = false;
+    if(db){ db.doc('meta/seed').delete().catch(function(){}); }
+    else { try{ localStorage.setItem(LS_KEY+'-sample','0'); }catch(e){} }
+    renderAll();
+  });
+  if(window.claude && window.claude.use){
+    window.claude.use('db').then(function(d){
+      if(!d){ useLocalStorage(); return; }
+      db = d;
+      ['rooms','tenants','payments','expenses'].forEach(watchCollection);
+      // "Ini contoh data" banner — nyala kalau Claude nyeed data awal
+      // (ditandain lewat dokumen meta/seed), ilang sendiri begitu
+      // dokumen itu dihapus (baik lewat tombol dismiss atau manual).
+      db.doc('meta/seed').onSnapshot(function(snap){
+        window._isSample = !!(snap.exists && snap.data().isSample);
+        renderAll();
+      }, function(){});
+    }).catch(function(){ useLocalStorage(); });
+    setTimeout(function(){ if(!db && !state.rooms.length) useLocalStorage(); }, 2500);
+  } else {
+    useLocalStorage();
+  }
+})();
+</script>
