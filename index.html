@@ -161,6 +161,7 @@
   }
   .pill-sage{background:var(--sage-soft); color:var(--sage);}
   .pill-amber{background:var(--amber-soft); color:var(--amber);}
+  .pill-blue{background:var(--accent-soft); color:var(--accent);}
   .pill-rust{background:var(--rust-soft); color:var(--rust);}
   .pill-muted{background:var(--surface-2); color:var(--muted);}
   .dot{width:6px; height:6px; border-radius:99px; background:currentColor;}
@@ -503,8 +504,9 @@
       </div>
       <div class="field">
         <label>Foto KTP</label>
-        <input type="file" accept="image/*" name="ktpFile" id="ktpFile">
-        <img id="ktpPreview" hidden style="margin-top:8px; max-width:220px; border-radius:10px; border:1px solid var(--line);" />
+        <input type="file" accept="image/*" name="ktpFile" id="ktpFile" style="position:absolute; width:1px; height:1px; opacity:0; pointer-events:none;">
+        <button type="button" class="btn btn-block" id="ktpPickBtn" style="justify-content:center;">📷 Ambil Foto / Pilih dari Galeri</button>
+        <img id="ktpPreview" hidden style="margin-top:10px; max-width:220px; border-radius:10px; border:1px solid var(--a-line);" />
       </div>
       <button type="submit" class="btn btn-primary btn-block" id="onboardSubmit">Simpan Data</button>
       <p class="auth-error" id="onboardError"></p>
@@ -959,7 +961,13 @@
 
     var pendapatan = state.payments.filter(function(p){return p.period===period;}).reduce(function(s,p){return s+Number(p.amount||0);},0);
     var pengeluaran = state.expenses.filter(function(e){return periodOf(e.date)===period;}).reduce(function(s,e){return s+Number(e.amount||0);},0);
-    var belumBayarTenants = tenants.filter(function(t){ return !paymentFor(t.id, period); });
+    // Penyewa yang masih "Dipesan" (DP duluan, tanggal masuk beneran
+    // masih di masa depan) sengaja GAK dianggap nunggak — dia emang
+    // belum jatuh tempo sama sekali, DP bukan cicilan sewa bulanan.
+    var belumBayarTenants = tenants.filter(function(t){
+      var belumMasuk = t.moveInDate && t.moveInDate > todayISO();
+      return !belumMasuk && !paymentFor(t.id, period);
+    });
     var potensiBelum = belumBayarTenants.reduce(function(s,t){ var r=roomById(t.roomId); return s + (r? Number(r.rent||0):0); },0);
 
     var tiles = [
@@ -1003,12 +1011,21 @@
     } else {
       grid.innerHTML = state.rooms.slice().sort(function(a,b){return (a.number||'').localeCompare(b.number||'', undefined, {numeric:true});}).map(function(r){
         var t = tenantForRoom(r.id);
+        // Kamar yang udah di-DP tapi penyewanya belum beneran pindah (tanggal
+        // masuk masih di masa depan) ditandain "Dipesan" — beda dari "Terisi"
+        // (udah beneran nempatin), tapi TETAP nge-block kamar itu dipilih
+        // buat penyewa lain (lihat disabled di roomOptions, tenantForRoom
+        // gak peduli moveInDate, jadi otomatis udah ke-cover).
+        var booked = t && t.moveInDate && t.moveInDate > todayISO();
+        var statusLabel = !t ? 'Kosong' : (booked ? 'Dipesan' : 'Terisi');
+        var statusTone = !t ? 'pill-amber' : (booked ? 'pill-blue' : 'pill-sage');
         return '<div class="room-card" data-edit-room="'+r.id+'">'+
-          '<span class="status pill '+(t?'pill-sage':'pill-amber')+'">'+(t?'Terisi':'Kosong')+'</span>'+
+          '<span class="status pill '+statusTone+'">'+statusLabel+'</span>'+
           '<div class="num">Kamar '+escapeHtml(r.number)+'</div>'+
           '<div class="type">'+escapeHtml(r.type||'—')+'</div>'+
           '<div class="rent">'+fmtRupiah(r.rent)+'<span style="font-family:var(--font-body); color:var(--muted); font-weight:400;">/bln</span></div>'+
-          (t ? '<div class="tenant">👤 '+escapeHtml(t.name)+'</div>' : '')+
+          (t ? '<div class="tenant">👤 '+escapeHtml(t.name)+(t.roommateName?' & '+escapeHtml(t.roommateName):'')+'</div>' : '')+
+          (booked ? '<div class="tenant" style="color:var(--accent);">Masuk tgl '+t.moveInDate+'</div>' : '')+
         '</div>';
       }).join('');
     }
@@ -1051,10 +1068,15 @@
     tbody.innerHTML = tenants.map(function(t){
       var r = roomById(t.roomId);
       var pay = paymentFor(t.id, billPeriod);
+      var belumMasuk = t.moveInDate && t.moveInDate > todayISO();
       var statusHtml, actionHtml;
       if(pay){
         statusHtml = '<span class="pill pill-sage">Lunas</span>';
         actionHtml = '<button class="btn btn-sm btn-ghost" data-unpay="'+pay.id+'">Batalkan</button>';
+      } else if(belumMasuk){
+        // Booking DP — belum jatuh tempo sama sekali, jangan ditagih dulu.
+        statusHtml = '<span class="pill pill-blue">Dipesan (masuk '+t.moveInDate+')</span>';
+        actionHtml = '<span class="hint">—</span>';
       } else if(billPeriod === currentPeriod()){
         var st = dueStatus(t, today);
         statusHtml = '<span class="pill '+(st.level==='rust'?'pill-rust':st.level==='amber'?'pill-amber':'pill-muted')+'">'+ (st.level==='rust'?'Telat':'Belum Bayar') +'</span>';
@@ -1250,7 +1272,8 @@
       var takenBy = tenantForRoom(r.id);
       var disabled = takenBy && (!existing || takenBy.id!==existing.id) ? ' disabled' : '';
       var sel = existing && existing.roomId===r.id ? ' selected' : '';
-      return '<option value="'+r.id+'"'+sel+disabled+'>Kamar '+escapeHtml(r.number)+(takenBy?' (terisi)':'')+'</option>';
+      var takenLabel = takenBy ? (takenBy.moveInDate && takenBy.moveInDate > todayISO() ? ' (dipesan)' : ' (terisi)') : '';
+      return '<option value="'+r.id+'"'+sel+disabled+'>Kamar '+escapeHtml(r.number)+takenLabel+'</option>';
     }).join('');
     openModal(
       '<h3>'+(isEdit?'Ubah Penghuni':'Tambah Penghuni')+'</h3>'+
@@ -1263,9 +1286,15 @@
         '</div>'+
         '<div class="field-row">'+
           '<div class="field"><label>Tanggal Masuk</label><input type="date" name="moveInDate" value="'+(existing?existing.moveInDate:todayISO())+'"></div>'+
-          '<div class="field"><label>Tanggal Jatuh Tempo (tiap bulan)</label><input type="number" min="1" max="31" name="dueDay" value="'+(existing?existing.dueDay:1)+'"></div>'+
+          '<div class="field"><label>Tanggal Jatuh Tempo (tiap bulan)</label><input type="number" min="1" max="31" name="dueDay" value="'+(existing?existing.dueDay:new Date().getDate())+'"></div>'+
         '</div>'+
         '<div class="field"><label>Deposit (Rp, opsional)</label><input type="number" min="0" name="deposit" value="'+(existing?existing.deposit||0:0)+'"></div>'+
+        '<div class="field"><label>Teman Sekamar (opsional)</label><input name="roommateName" value="'+(existing?escapeHtml(existing.roommateName||''):'')+'" placeholder="Kalau kamar ini diisi berdua — satu tagihan tetap, cuma dicatet namanya"></div>'+
+        '<div class="field-row">'+
+          '<div class="field"><label>Uang DP Booking (Rp, opsional)</label><input type="number" min="0" name="dpAmount" value="'+(existing?existing.dpAmount||0:0)+'" placeholder="0"></div>'+
+          '<div class="field"><label>Tanggal DP Diterima</label><input type="date" name="dpDate" value="'+(existing?existing.dpDate||'':'')+'"></div>'+
+        '</div>'+
+        '<p class="hint" style="margin:-6px 0 13px;">Isi ini kalau ada yang DP duluan buat "kunci" kamar sebelum beneran pindah — setel Tanggal Masuk di atas ke tanggal RENCANA pindahnya, kamar otomatis ditandain "Dipesan" (bukan Kosong) sampai tanggal itu tiba.</p>'+
         (isEdit ? '<div class="field"><label><input type="checkbox" name="active" '+(existing.active===false?'':'checked')+' style="width:auto; margin-right:6px;">Masih tinggal di kos</label></div>' : '')+
         '<div style="border-top:1px solid var(--line); margin:16px 0 13px; padding-top:13px;">'+
           '<p style="font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--muted); margin-bottom:10px;">Data Diri (diisi penyewa sendiri lewat Login)</p>'+
@@ -1284,6 +1313,19 @@
       '</form>',
       function(root){
         root.querySelector('#cancelBtn').addEventListener('click', closeModal);
+        // Tanggal Jatuh Tempo otomatis NGIKUTIN Tanggal Masuk (tagihan
+        // bulan berikutnya jatuh di tanggal yang sama kayak dia pindah,
+        // bukan mentok tanggal 1) — berhenti ngikut kalau field-nya udah
+        // pernah diketik manual sendiri sama admin.
+        var dueDayTouched = false;
+        var moveInInput = root.querySelector('[name="moveInDate"]');
+        var dueDayInput = root.querySelector('[name="dueDay"]');
+        dueDayInput.addEventListener('input', function(){ dueDayTouched = true; });
+        moveInInput.addEventListener('change', function(){
+          if(!dueDayTouched && moveInInput.value){
+            dueDayInput.value = new Date(moveInInput.value+'T00:00:00').getDate();
+          }
+        });
         root.querySelector('#tenantForm').addEventListener('submit', function(e){
           e.preventDefault();
           var f = e.target;
@@ -1292,7 +1334,8 @@
             name: f.name.value.trim(), email: f.email.value.trim().toLowerCase(), phone: f.phone.value.trim(), roomId: f.roomId.value,
             roomNumber: room ? room.number : '', rent: room ? room.rent : 0,
             moveInDate: f.moveInDate.value, dueDay: Math.max(1,Math.min(31,Number(f.dueDay.value)||1)),
-            deposit: Number(f.deposit.value)||0,
+            deposit: Number(f.deposit.value)||0, roommateName: f.roommateName.value.trim(),
+            dpAmount: Number(f.dpAmount.value)||0, dpDate: f.dpDate.value,
             nik: f.nik.value.trim(), emergencyName: f.emergencyName.value.trim(),
             emergencyPhone: f.emergencyPhone.value.trim(), alamat: f.alamat.value.trim()
           };
@@ -1478,6 +1521,8 @@
     f.emergencyPhone.value = t.emergencyPhone || '';
     var img = document.getElementById('ktpPreview');
     if(t.ktpPhoto){ img.src = t.ktpPhoto; img.hidden = false; } else { img.hidden = true; img.src=''; }
+    delete img.dataset.pending;
+    document.getElementById('ktpPickBtn').textContent = t.ktpPhoto ? '📷 Ganti Foto' : '📷 Ambil Foto / Pilih dari Galeri';
     document.getElementById('onboardError').textContent = '';
   }
 
@@ -1502,12 +1547,19 @@
     };
     reader.readAsDataURL(file);
   }
+  // Input file aslinya disembunyiin (kecil banget & jelek defaultnya di
+  // HP) — tombol INI yang keliatan & gampang dipencet, tinggal neruskan
+  // klik ke input file yang beneran.
+  document.getElementById('ktpPickBtn').addEventListener('click', function(){
+    document.getElementById('ktpFile').click();
+  });
   document.getElementById('ktpFile').addEventListener('change', function(e){
     var file = e.target.files[0]; if(!file) return;
     compressImage(file, function(dataUrl){
       var img = document.getElementById('ktpPreview');
       img.src = dataUrl; img.hidden = false;
       img.dataset.pending = dataUrl; // nempel sementara, kesimpen pas submit
+      document.getElementById('ktpPickBtn').textContent = '📷 Ganti Foto';
     });
   });
   document.getElementById('onboardForm').addEventListener('submit', function(e){
